@@ -22,75 +22,98 @@
     }
   }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-tertiary); color: var(--text-primary); min-height: 100vh; padding: 1.5rem; }
-  .db { max-width: 1100px; margin: 0 auto; }
+  .db { max-width: 1200px; margin: 0 auto; }
 
-  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 12px; background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1rem 1.25rem; }
-  .topbar-left { display: flex; align-items: center; gap: 12px; }
-  .topbar-icon { width: 38px; height: 38px; border-radius: 10px; background: #185fa5; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .topbar-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .topbar-title { font-size: 17px; font-weight: 500; color: var(--text-primary); }
-  .topbar-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+  /* top bar */
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:12px; background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-xl); padding:1rem 1.25rem; }
+  .topbar-left { display:flex; align-items:center; gap:12px; }
+  .topbar-icon { width:38px; height:38px; border-radius:10px; background:#185fa5; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .topbar-icon svg { width:18px; height:18px; stroke:#fff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .topbar-title { font-size:17px; font-weight:500; color:var(--text-primary); }
+  .topbar-sub { font-size:12px; color:var(--text-secondary); margin-top:1px; }
 
-  .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .filter-chip { display: flex; align-items: center; gap: 6px; background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--text-secondary); }
-  .filter-chip svg { flex-shrink: 0; }
-  .filter-chip select { border: none; background: transparent; font-size: 12px; color: var(--text-primary); outline: none; cursor: pointer; padding: 0; font-family: inherit; }
+  /* tabs */
+  .tab-row { display:flex; gap:4px; margin-bottom:1.25rem; background:var(--bg-secondary); border-radius:10px; padding:4px; border:0.5px solid var(--border-light); width:fit-content; }
+  .tab-btn { padding:6px 16px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; border:none; background:transparent; color:var(--text-secondary); transition:all .15s; }
+  .tab-btn.active { background:var(--bg-primary); color:var(--text-primary); border:0.5px solid var(--border); }
 
-  .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
-  .kpi { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 0.9rem 1rem; position: relative; overflow: hidden; border: 0.5px solid var(--border-light); }
-  .kpi-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: var(--radius-lg) 0 0 var(--radius-lg); }
-  .kpi-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
-  .kpi-val { font-size: 21px; font-weight: 500; color: var(--text-primary); line-height: 1; }
-  .kpi-unit { font-size: 10px; color: var(--text-secondary); margin-top: 3px; }
-  .kpi-bar-wrap { height: 3px; background: var(--border); border-radius: 3px; margin-top: 8px; }
-  .kpi-bar { height: 3px; border-radius: 3px; }
+  /* filters */
+  .filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .filter-chip { display:flex; align-items:center; gap:6px; background:var(--bg-secondary); border:0.5px solid var(--border); border-radius:20px; padding:5px 12px; font-size:12px; color:var(--text-secondary); }
+  .filter-chip svg { flex-shrink:0; }
+  .filter-chip select { border:none; background:transparent; font-size:12px; color:var(--text-primary); outline:none; cursor:pointer; padding:0; font-family:inherit; }
 
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+  /* kpi */
+  .kpi-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(115px,1fr)); gap:10px; margin-bottom:1.25rem; }
+  .kpi { background:var(--bg-secondary); border-radius:var(--radius-lg); padding:.9rem 1rem; position:relative; overflow:hidden; border:0.5px solid var(--border-light); }
+  .kpi-accent { position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:var(--radius-lg) 0 0 var(--radius-lg); }
+  .kpi-label { font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; margin-bottom:5px; }
+  .kpi-val { font-size:20px; font-weight:500; color:var(--text-primary); line-height:1; }
+  .kpi-unit { font-size:10px; color:var(--text-secondary); margin-top:3px; }
+  .kpi-bar-wrap { height:3px; background:var(--border); border-radius:3px; margin-top:8px; }
+  .kpi-bar { height:3px; border-radius:3px; }
 
-  .panel { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1rem 1.25rem; }
-  .panel-full { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1rem 1.25rem; margin-bottom: 1rem; }
-  .panel-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .panel-title { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; }
-  .chart-wrap { position: relative; width: 100%; }
+  /* grid */
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem; }
+  @media(max-width:640px){ .grid2 { grid-template-columns:1fr; } }
 
-  .leg { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-  .leg-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-secondary); }
-  .leg-sq { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  /* panels */
+  .panel { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-xl); padding:1rem 1.25rem; }
+  .panel-full { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-xl); padding:1rem 1.25rem; margin-bottom:1rem; }
+  .panel-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:6px; }
+  .panel-title { font-size:11px; font-weight:500; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.06em; }
+  .chart-wrap { position:relative; width:100%; }
 
-  .tbl-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th { font-size: 10px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; padding: 5px 8px; border-bottom: 0.5px solid var(--border); text-align: left; white-space: nowrap; }
-  td { padding: 7px 8px; color: var(--text-primary); border-bottom: 0.5px solid var(--border-light); }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--bg-secondary); transition: background .15s; }
-  .pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; }
-  .bar-bg { background: var(--border); border-radius: 4px; height: 5px; margin-top: 4px; }
-  .bar-f { height: 5px; border-radius: 4px; }
+  /* legend */
+  .leg { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .leg-item { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text-secondary); }
+  .leg-sq { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
 
-  .section-hdr { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .07em; margin: 1.5rem 0 .75rem; }
+  /* table */
+  .tbl-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th { font-size:10px; font-weight:500; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; padding:6px 8px; border-bottom:0.5px solid var(--border); text-align:left; white-space:nowrap; }
+  td { padding:6px 8px; color:var(--text-primary); border-bottom:0.5px solid var(--border-light); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--bg-secondary); }
+  .pill { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:500; }
+  .bar-bg { background:var(--border); border-radius:4px; height:5px; margin-top:4px; }
+  .bar-f { height:5px; border-radius:4px; }
 
-  .top5-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-  .top5-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
-  .top5-card-hdr { display: flex; align-items: center; gap: 10px; padding: .75rem 1rem; border-bottom: 0.5px solid var(--border); }
-  .top5-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-  .top5-machine { font-size: 13px; font-weight: 500; color: var(--text-primary); }
-  .top5-total { margin-left: auto; font-size: 11px; color: var(--text-secondary); }
-  .top5-item { display: flex; align-items: flex-start; gap: 8px; padding: .65rem 1rem; border-bottom: 0.5px solid var(--border-light); }
-  .top5-item:last-child { border-bottom: none; }
-  .top5-rank { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; flex-shrink: 0; margin-top: 1px; }
-  .top5-info { flex: 1; min-width: 0; }
-  .top5-detail { font-size: 11px; color: var(--text-primary); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .top5-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
-  .top5-date { font-size: 10px; color: var(--text-secondary); }
-  .top5-type { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 9px; font-weight: 500; }
-  .top5-smu { font-size: 12px; font-weight: 500; flex-shrink: 0; text-align: right; margin-top: 1px; }
-  .top5-smu-unit { font-size: 9px; font-weight: 400; }
-  .merged-badge { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border-radius: 10px; font-size: 9px; font-weight: 500; background: #534ab722; color: #534ab7; }
-  .no-data { padding: 1.5rem 1rem; text-align: center; font-size: 12px; color: var(--text-secondary); }
-  .load-msg { text-align: center; padding: 4rem; color: var(--text-secondary); font-size: 14px; }
-  .err { background: #fcebeb; color: #a32d2d; border-radius: var(--radius-lg); padding: 1rem 1.25rem; font-size: 13px; margin: 1rem 0; border: 0.5px solid #f09595; }
-  @media (prefers-color-scheme: dark) { .err { background: #2e1515; color: #f09595; border-color: #791f1f; } }
+  /* top5 */
+  .section-hdr { font-size:11px; font-weight:500; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.07em; margin:1.5rem 0 .75rem; }
+  .top5-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+  .top5-card { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; }
+  .top5-card-hdr { display:flex; align-items:center; gap:10px; padding:.75rem 1rem; border-bottom:0.5px solid var(--border); }
+  .top5-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+  .top5-machine { font-size:13px; font-weight:500; color:var(--text-primary); }
+  .top5-total { margin-left:auto; font-size:11px; color:var(--text-secondary); }
+  .top5-item { display:flex; align-items:flex-start; gap:8px; padding:.65rem 1rem; border-bottom:0.5px solid var(--border-light); }
+  .top5-item:last-child { border-bottom:none; }
+  .top5-rank { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; flex-shrink:0; margin-top:1px; }
+  .top5-info { flex:1; min-width:0; }
+  .top5-detail { font-size:11px; color:var(--text-primary); line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .top5-meta { display:flex; align-items:center; gap:6px; margin-top:3px; flex-wrap:wrap; }
+  .top5-date { font-size:10px; color:var(--text-secondary); }
+  .top5-type { display:inline-block; padding:1px 6px; border-radius:10px; font-size:9px; font-weight:500; }
+  .top5-smu { font-size:12px; font-weight:500; flex-shrink:0; text-align:right; margin-top:1px; }
+  .top5-smu-unit { font-size:9px; font-weight:400; }
+  .merged-badge { display:inline-flex; align-items:center; gap:3px; padding:1px 6px; border-radius:10px; font-size:9px; font-weight:500; background:#534ab722; color:#534ab7; }
+  .no-data { padding:1.5rem 1rem; text-align:center; font-size:12px; color:var(--text-secondary); }
+
+  /* mttr/mtbf specific */
+  .mttr-info { font-size:10px; color:var(--text-secondary); background:var(--bg-secondary); border-radius:6px; padding:6px 10px; margin-bottom:1rem; line-height:1.6; }
+  .val-good { color:#0f6e56; font-weight:500; }
+  .val-warn { color:#854f0b; font-weight:500; }
+  .val-bad  { color:#a32d2d; font-weight:500; }
+  .num-right { text-align:right; font-variant-numeric:tabular-nums; }
+
+  /* page state */
+  .load-msg { text-align:center; padding:4rem; color:var(--text-secondary); font-size:14px; }
+  .err { background:#fcebeb; color:#a32d2d; border-radius:var(--radius-lg); padding:1rem 1.25rem; font-size:13px; margin:1rem 0; border:0.5px solid #f09595; }
+  @media(prefers-color-scheme:dark){ .err { background:#2e1515; color:#f09595; border-color:#791f1f; } }
+
+  .hidden { display:none; }
 </style>
 </head>
 <body>
@@ -101,6 +124,7 @@
 const SHEET_ID = '1ygTva5iEXjhi-LKMIJAF5909xux1wmSVKCWuZbFDrZA';
 const GID      = '103270503';
 const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
+const HOURS_PER_DAY = 24; /* operating hours per day */
 
 /* ─── CONSTANTS ──────────────────────────────────────────────── */
 const MACHINES = ['System','Spreader','Crusher #1','Crusher #2','Crusher #3','Bucket Wheel #1','Bucket Wheel #2'];
@@ -114,28 +138,25 @@ const MALIAS   = {
   'bucket wheel #2':'Bucket Wheel #2','bucket wheel#2':'Bucket Wheel #2',
 };
 const TYPE_ORDER    = ['Plan','ME','EE','OPT','Uncontrol'];
-const TC            = { Plan:'#185fa5', ME:'#a32d2d', EE:'#854f0b', OPT:'#0f6e56', Uncontrol:'#534ab7' };
-const MC            = ['#185fa5','#a32d2d','#854f0b','#0f6e56','#534ab7','#993c1d','#993556'];
+const TC = { Plan:'#185fa5', ME:'#a32d2d', EE:'#854f0b', OPT:'#0f6e56', Uncontrol:'#534ab7' };
+const MC = ['#185fa5','#a32d2d','#854f0b','#0f6e56','#534ab7','#993c1d','#993556'];
 const DASH_PATTERNS = [[],[8,4],[4,4],[2,4],[8,4,2,4],[6,2],[4,2,2,2]];
-const TH_MONTHS     = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-const RANK_BG       = ['#185fa5','#378add','#85b7eb','#b5d4f4','#e6f1fb'];
-const RANK_TXT      = ['#fff','#fff','#0c447c','#0c447c','#185fa5'];
+const TH_MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const RANK_BG  = ['#185fa5','#378add','#85b7eb','#b5d4f4','#e6f1fb'];
+const RANK_TXT = ['#fff','#fff','#0c447c','#0c447c','#185fa5'];
 
-let allData = [], charts = {};
+let allMerged = [], charts = {}, currentTab = 'overview';
 const isDark    = window.matchMedia('(prefers-color-scheme: dark)').matches;
 const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
 const tickColor = '#888780';
 
-/* ─── PARSE HELPERS ──────────────────────────────────────────── */
+/* ─── PARSE ──────────────────────────────────────────────────── */
 function normMachine(loc) { return loc ? (MALIAS[loc.trim().toLowerCase()] || null) : null; }
 
-/* Convert "HH:MM" string + date object → absolute minutes from epoch-start-of-day */
-function parseTimeStr(timeStr) {
-  if (!timeStr) return null;
-  const t = timeStr.trim();
-  const m = t.match(/^(\d{1,2}):(\d{2})$/);
-  if (!m) return null;
-  return parseInt(m[1]) * 60 + parseInt(m[2]);
+function parseTimeStr(s) {
+  if (!s) return null;
+  const m = s.trim().match(/^(\d{1,2}):(\d{2})$/);
+  return m ? parseInt(m[1])*60 + parseInt(m[2]) : null;
 }
 
 function parseRecord(row) {
@@ -143,276 +164,424 @@ function parseRecord(row) {
   if (!machine) return null;
   const smu = parseFloat(row['SMU']);
   if (isNaN(smu) || smu <= 0) return null;
-
   const raw = row['Date']; let dateObj = null;
-  if (raw) { const p = raw.split('/'); if (p.length === 3) dateObj = new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0])); }
-
+  if (raw) { const p=raw.split('/'); if(p.length===3) dateObj=new Date(parseInt(p[2]),parseInt(p[1])-1,parseInt(p[0])); }
   const startMin  = parseTimeStr(row['Start']);
   const finishMin = parseTimeStr(row['Finish']);
-
-  /* Compute absolute datetime minutes for start/finish */
-  let absStart = null, absFinish = null;
-  if (dateObj && startMin !== null && finishMin !== null) {
-    const base = dateObj.getTime() / 60000; /* date in minutes */
+  let absStart=null, absFinish=null;
+  if (dateObj && startMin!==null && finishMin!==null) {
+    const base = dateObj.getTime()/60000;
     absStart  = base + startMin;
-    /* If finish <= start → crosses midnight → finish is next day */
     absFinish = base + finishMin + (finishMin <= startMin ? 1440 : 0);
   }
-
-  return {
-    date: dateObj, machine, smu,
-    type: (row['Type'] || '').trim() || 'Other',
-    detail: (row['Detail'] || '').trim(),
-    startMin, finishMin, absStart, absFinish,
-    mergedCount: 1,
-  };
+  return { date:dateObj, machine, smu, type:(row['Type']||'').trim()||'Other', detail:(row['Detail']||'').trim(), startMin, finishMin, absStart, absFinish, mergedCount:1 };
 }
 
-/* ─── MERGE CONSECUTIVE DOWNTIME ─────────────────────────────── */
-/*
-  Two records are "consecutive" if:
-    1. Same machine
-    2. Same type
-    3. Same detail (normalised)
-    4. absFinish of record A === absStart of record B
-       (i.e. they are back-to-back across shift boundary 7:00 or 19:00)
-*/
-function normaliseDetail(d) {
-  return (d || '').toLowerCase().replace(/\s+/g,' ').trim();
-}
+/* ─── MERGE CONSECUTIVE ──────────────────────────────────────── */
+function normDetail(d) { return (d||'').toLowerCase().replace(/\s+/g,' ').trim(); }
 
 function mergeConsecutive(records) {
-  /* Sort by machine → absStart so we can do one linear pass */
-  const sorted = [...records].sort((a, b) => {
-    if (a.machine !== b.machine) return a.machine.localeCompare(b.machine);
-    return (a.absStart || 0) - (b.absStart || 0);
+  const sorted = [...records].sort((a,b) => {
+    if(a.machine!==b.machine) return a.machine.localeCompare(b.machine);
+    return (a.absStart||0)-(b.absStart||0);
   });
-
   const merged = [];
-
   for (const rec of sorted) {
-    if (!rec.absStart || !rec.absFinish) { merged.push({...rec}); continue; }
-
-    /* Try to find an existing merged record to extend */
-    let found = false;
-    for (let i = merged.length - 1; i >= 0; i--) {
-      const m = merged[i];
-      if (m.machine !== rec.machine) break; /* different machine (sorted) */
-      if (m.absFinish === null) continue;
-
-      /* Check continuity: m ends exactly where rec starts */
-      if (
-        m.absFinish === rec.absStart &&
-        m.type === rec.type &&
-        normaliseDetail(m.detail) === normaliseDetail(rec.detail)
-      ) {
-        /* Merge: extend finish, add SMU */
-        m.absFinish    = rec.absFinish;
-        m.smu          = parseFloat((m.smu + rec.smu).toFixed(4));
-        m.mergedCount  += 1;
-        /* Keep earliest date for display */
-        found = true;
-        break;
+    if (!rec.absStart||!rec.absFinish) { merged.push({...rec}); continue; }
+    let found=false;
+    for (let i=merged.length-1; i>=0; i--) {
+      const m=merged[i];
+      if(m.machine!==rec.machine) break;
+      if(m.absFinish===null) continue;
+      if(m.absFinish===rec.absStart && m.type===rec.type && normDetail(m.detail)===normDetail(rec.detail)) {
+        m.absFinish = rec.absFinish;
+        m.smu = parseFloat((m.smu+rec.smu).toFixed(4));
+        m.mergedCount += 1;
+        found=true; break;
       }
     }
-    if (!found) merged.push({...rec});
+    if(!found) merged.push({...rec});
   }
-
   return merged;
 }
 
-/* ─── OTHER HELPERS ──────────────────────────────────────────── */
-function monthKey(d)   { return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` : '?'; }
-function monthLabel(k) { if (k==='?') return '?'; const [y,m]=k.split('-'); return `${TH_MONTHS[parseInt(m)-1]} ${y}`; }
-function fmtDate(d)    { return d ? `${d.getDate()} ${TH_MONTHS[d.getMonth()]} ${d.getFullYear()}` : ''; }
-function filterData(data, mo, ty) {
-  return data.filter(r => (mo==='all' || monthKey(r.date)===mo) && (ty==='all' || r.type===ty));
+/* ─── DATE / LABEL HELPERS ───────────────────────────────────── */
+function dateKey(d)    { return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:'?'; }
+function monthKey(d)   { return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`:'?'; }
+function monthLabel(k) { if(k==='?')return'?'; const[y,m]=k.split('-'); return`${TH_MONTHS[parseInt(m)-1]} ${y}`; }
+function fmtDate(d)    { return d?`${d.getDate()} ${TH_MONTHS[d.getMonth()]} ${d.getFullYear()}`:''; }
+function shortDate(d)  { return d?`${d.getDate()}/${d.getMonth()+1}`:''; }
+
+function filterData(data,mo,ty) {
+  return data.filter(r=>(mo==='all'||monthKey(r.date)===mo)&&(ty==='all'||r.type===ty));
 }
-function sumSMU(arr) { return arr.reduce((s,r) => s+r.smu, 0); }
-function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+function sumSMU(arr) { return arr.reduce((s,r)=>s+r.smu,0); }
+function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+/* ─── MTTR / MTBF CALCULATION ────────────────────────────────── */
+/*
+  Per machine per day:
+    totalDowntime  = sum of SMU for that machine on that date
+    failureCount   = number of merged downtime events
+    uptime         = HOURS_PER_DAY - totalDowntime  (capped at 0)
+    MTTR (day)     = totalDowntime / failureCount
+    MTBF (day)     = uptime / failureCount
+
+  Summary (all days combined):
+    MTTR = total downtime hours / total failure count
+    MTBF = total uptime hours   / total failure count
+    Availability = total uptime / (total uptime + total downtime) * 100
+*/
+function calcMTTR_MTBF(data) {
+  /* group by machine → date */
+  const byMachineDate = {};
+  MACHINES.forEach(m => byMachineDate[m] = {});
+
+  data.forEach(r => {
+    const dk = dateKey(r.date);
+    if (!byMachineDate[r.machine]) return;
+    if (!byMachineDate[r.machine][dk]) byMachineDate[r.machine][dk] = { smuTotal:0, events:0, date:r.date };
+    byMachineDate[r.machine][dk].smuTotal += r.smu;
+    byMachineDate[r.machine][dk].events   += 1;
+  });
+
+  /* daily records per machine */
+  const daily = {}; /* machine → [ { dk, date, smu, events, uptime, mttr, mtbf } ] */
+  MACHINES.forEach(m => {
+    daily[m] = Object.entries(byMachineDate[m]).map(([dk, v]) => {
+      const downtime = Math.min(v.smuTotal, HOURS_PER_DAY);
+      const uptime   = Math.max(HOURS_PER_DAY - downtime, 0);
+      const mttr     = v.events > 0 ? downtime / v.events : 0;
+      const mtbf     = v.events > 0 ? uptime   / v.events : uptime;
+      return { dk, date:v.date, smu:downtime, events:v.events, uptime, mttr, mtbf };
+    }).sort((a,b) => a.dk.localeCompare(b.dk));
+  });
+
+  /* summary per machine */
+  const summary = {};
+  MACHINES.forEach(m => {
+    const rows = daily[m];
+    if (!rows.length) { summary[m] = { totalDowntime:0, totalUptime:0, totalEvents:0, totalDays:0, mttr:0, mtbf:0, availability:100 }; return; }
+    const totalDowntime = rows.reduce((s,r)=>s+r.smu,0);
+    const totalEvents   = rows.reduce((s,r)=>s+r.events,0);
+    const totalDays     = rows.length;
+    const totalUptime   = totalDays * HOURS_PER_DAY - totalDowntime;
+    const mttr = totalEvents > 0 ? totalDowntime / totalEvents : 0;
+    const mtbf = totalEvents > 0 ? Math.max(totalUptime,0) / totalEvents : HOURS_PER_DAY;
+    const availability = (Math.max(totalUptime,0) / (totalDays * HOURS_PER_DAY)) * 100;
+    summary[m] = { totalDowntime, totalUptime:Math.max(totalUptime,0), totalEvents, totalDays, mttr, mtbf, availability };
+  });
+
+  return { daily, summary };
+}
 
 /* ─── TOP-5 CARD ─────────────────────────────────────────────── */
 function top5CardHTML(machine, fd, color) {
-  const items  = fd.filter(r => r.machine===machine).sort((a,b) => b.smu-a.smu).slice(0,5);
-  const total  = sumSMU(fd.filter(r => r.machine===machine));
-  const maxSmu = items[0]?.smu || 1;
-  if (!items.length) return `
-    <div class="top5-card">
-      <div class="top5-card-hdr"><span class="top5-dot" style="background:${color}"></span><span class="top5-machine">${machine}</span></div>
-      <div class="no-data">ไม่มีข้อมูล</div>
-    </div>`;
-  return `
-    <div class="top5-card">
-      <div class="top5-card-hdr">
-        <span class="top5-dot" style="background:${color}"></span>
-        <span class="top5-machine">${machine}</span>
-        <span class="top5-total">${total.toFixed(1)} ชม. รวม</span>
-      </div>
-      ${items.map((r,i) => `
-        <div class="top5-item">
-          <div class="top5-rank" style="background:${RANK_BG[i]};color:${RANK_TXT[i]}">${i+1}</div>
-          <div class="top5-info">
-            <div class="top5-detail" title="${r.detail}">${r.detail||'—'}</div>
-            <div class="top5-meta">
-              <span class="top5-date">${fmtDate(r.date)}</span>
-              <span class="top5-type" style="background:${(TC[r.type]||'#888')}22;color:${TC[r.type]||'#888'}">${r.type}</span>
-              ${r.mergedCount > 1 ? `<span class="merged-badge">รวม ${r.mergedCount} กะ</span>` : ''}
-            </div>
-            <div style="height:3px;background:var(--border);border-radius:3px;margin-top:5px">
-              <div style="height:3px;border-radius:3px;width:${(r.smu/maxSmu*100).toFixed(1)}%;background:${color}"></div>
-            </div>
+  const items  = fd.filter(r=>r.machine===machine).sort((a,b)=>b.smu-a.smu).slice(0,5);
+  const total  = sumSMU(fd.filter(r=>r.machine===machine));
+  const maxSmu = items[0]?.smu||1;
+  if(!items.length) return `<div class="top5-card"><div class="top5-card-hdr"><span class="top5-dot" style="background:${color}"></span><span class="top5-machine">${machine}</span></div><div class="no-data">ไม่มีข้อมูล</div></div>`;
+  return `<div class="top5-card">
+    <div class="top5-card-hdr"><span class="top5-dot" style="background:${color}"></span><span class="top5-machine">${machine}</span><span class="top5-total">${total.toFixed(1)} ชม. รวม</span></div>
+    ${items.map((r,i)=>`
+      <div class="top5-item">
+        <div class="top5-rank" style="background:${RANK_BG[i]};color:${RANK_TXT[i]}">${i+1}</div>
+        <div class="top5-info">
+          <div class="top5-detail" title="${r.detail}">${r.detail||'—'}</div>
+          <div class="top5-meta">
+            <span class="top5-date">${fmtDate(r.date)}</span>
+            <span class="top5-type" style="background:${(TC[r.type]||'#888')}22;color:${TC[r.type]||'#888'}">${r.type}</span>
+            ${r.mergedCount>1?`<span class="merged-badge">รวม ${r.mergedCount} กะ</span>`:''}
           </div>
-          <div class="top5-smu" style="color:${color}">${r.smu.toFixed(1)}<span class="top5-smu-unit"> ชม.</span></div>
-        </div>`).join('')}
-    </div>`;
+          <div style="height:3px;background:var(--border);border-radius:3px;margin-top:5px">
+            <div style="height:3px;border-radius:3px;width:${(r.smu/maxSmu*100).toFixed(1)}%;background:${color}"></div>
+          </div>
+        </div>
+        <div class="top5-smu" style="color:${color}">${r.smu.toFixed(1)}<span class="top5-smu-unit"> ชม.</span></div>
+      </div>`).join('')}
+  </div>`;
 }
 
-/* ─── BUILD DASHBOARD ────────────────────────────────────────── */
-function buildUI(mergedData, mo, ty) {
-  const fd    = filterData(mergedData, mo, ty);
+/* ─── RENDER OVERVIEW TAB ────────────────────────────────────── */
+function renderOverview(mo, ty) {
+  const fd    = filterData(allMerged, mo, ty);
   const total = sumSMU(fd);
+  const bySMU={}; MACHINES.forEach(m=>bySMU[m]=0);
+  fd.forEach(r=>{ if(bySMU[r.machine]!==undefined) bySMU[r.machine]+=r.smu; });
+  const byType={}; TYPE_ORDER.forEach(t=>byType[t]=0);
+  fd.forEach(r=>{ if(byType[r.type]!==undefined) byType[r.type]+=r.smu; });
+  const months=[...new Set(allMerged.map(r=>monthKey(r.date)).filter(k=>k!=='?'))].sort();
+  const types=[...new Set(allMerged.map(r=>r.type))].filter(Boolean).sort();
+  const maxVal=Math.max(...Object.values(bySMU),1);
+  const mmd={}; MACHINES.forEach(m=>{mmd[m]={};months.forEach(k=>mmd[m][k]=0);});
+  allMerged.filter(r=>ty==='all'||r.type===ty).forEach(r=>{const k=monthKey(r.date);if(mmd[r.machine]&&k!=='?')mmd[r.machine][k]+=r.smu;});
+  const typeLabels=TYPE_ORDER.filter(t=>byType[t]>0);
+  const typeVals=typeLabels.map(t=>byType[t]);
+  const typeColors=typeLabels.map(t=>TC[t]||'#888');
 
-  const bySMU = {}; MACHINES.forEach(m => bySMU[m]=0);
-  fd.forEach(r => { if (bySMU[r.machine]!==undefined) bySMU[r.machine]+=r.smu; });
-
-  const byType = {}; TYPE_ORDER.forEach(t => byType[t]=0);
-  fd.forEach(r => { if (byType[r.type]!==undefined) byType[r.type]+=r.smu; });
-
-  const months = [...new Set(mergedData.map(r=>monthKey(r.date)).filter(k=>k!=='?'))].sort();
-  const types  = [...new Set(mergedData.map(r=>r.type))].filter(Boolean).sort();
-  const maxVal = Math.max(...Object.values(bySMU), 1);
-
-  const mmd = {};
-  MACHINES.forEach(m => { mmd[m]={}; months.forEach(k=>mmd[m][k]=0); });
-  mergedData.filter(r => ty==='all'||r.type===ty).forEach(r => {
-    const k=monthKey(r.date); if(mmd[r.machine]&&k!=='?') mmd[r.machine][k]+=r.smu;
-  });
-
-  const typeLabels = TYPE_ORDER.filter(t=>byType[t]>0);
-  const typeVals   = typeLabels.map(t=>byType[t]);
-  const typeColors = typeLabels.map(t=>TC[t]||'#888');
-
-  document.getElementById('app').innerHTML = `
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
-        <div><div class="topbar-title">Machine Downtime Dashboard</div><div class="topbar-sub">ภาพรวมการหยุดเครื่องจักร · รวม Downtime ต่อเนื่องข้ามกะอัตโนมัติ</div></div>
-      </div>
-      <div class="filters">
-        <div class="filter-chip">
-          <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <select id="sel-mo"><option value="all">ทุกเดือน</option>${months.map(k=>`<option value="${k}" ${mo===k?'selected':''}>${monthLabel(k)}</option>`).join('')}</select>
-        </div>
-        <div class="filter-chip">
-          <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-          <select id="sel-ty"><option value="all">ทุกประเภท</option>${types.map(t=>`<option value="${t}" ${ty===t?'selected':''}>${t}</option>`).join('')}</select>
-        </div>
-      </div>
-    </div>
-
+  const div = document.getElementById('tab-content');
+  div.innerHTML = `
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-accent" style="background:#185fa5"></div><div class="kpi-label">รวมทั้งหมด</div><div class="kpi-val">${total.toFixed(1)}</div><div class="kpi-unit">ชั่วโมง</div></div>
       ${MACHINES.map((m,i)=>`<div class="kpi"><div class="kpi-accent" style="background:${MC[i]}"></div><div class="kpi-label">${MSHORT[i]}</div><div class="kpi-val">${bySMU[m].toFixed(1)}</div><div class="kpi-unit">ชม.</div><div class="kpi-bar-wrap"><div class="kpi-bar" style="width:${maxVal>0?(bySMU[m]/maxVal*100).toFixed(1):0}%;background:${MC[i]}"></div></div></div>`).join('')}
     </div>
-
     <div class="grid2">
       <div class="panel">
         <div class="panel-hdr"><span class="panel-title">Downtime ต่อเครื่อง</span></div>
-        <div class="chart-wrap" style="height:240px"><canvas id="c-bar" role="img" aria-label="Bar chart Downtime per machine">Downtime per machine</canvas></div>
+        <div class="chart-wrap" style="height:240px"><canvas id="c-bar" role="img" aria-label="Bar">bar</canvas></div>
       </div>
       <div class="panel">
         <div class="panel-hdr"><span class="panel-title">แยกตามประเภท</span></div>
         <div class="leg" id="leg-type"></div>
-        <div class="chart-wrap" style="height:200px"><canvas id="c-donut" role="img" aria-label="Donut chart Downtime by type">Downtime by type</canvas></div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c-donut" role="img" aria-label="Donut">donut</canvas></div>
       </div>
     </div>
-
     <div class="panel-full">
       <div class="panel-hdr"><span class="panel-title">แนวโน้มรายเดือน</span></div>
       <div class="leg" id="leg-trend"></div>
-      <div class="chart-wrap" style="height:200px"><canvas id="c-line" role="img" aria-label="Line chart monthly Downtime trend">Trend</canvas></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="c-line" role="img" aria-label="Line">line</canvas></div>
     </div>
-
     <div class="panel-full">
       <div class="panel-hdr"><span class="panel-title">สรุปแยกเครื่อง × ประเภท (ชั่วโมง)</span></div>
       <div class="tbl-wrap"><table>
-        <thead><tr>
-          <th>เครื่องจักร</th>
-          ${TYPE_ORDER.map(t=>`<th><span class="pill" style="background:${TC[t]}22;color:${TC[t]}">${t}</span></th>`).join('')}
-          <th>รวม</th><th style="min-width:90px">%</th>
-        </tr></thead>
+        <thead><tr><th>เครื่องจักร</th>${TYPE_ORDER.map(t=>`<th><span class="pill" style="background:${TC[t]}22;color:${TC[t]}">${t}</span></th>`).join('')}<th>รวม</th><th style="min-width:90px">%</th></tr></thead>
         <tbody>
           ${MACHINES.map((m,i)=>{
             const bt={}; TYPE_ORDER.forEach(t=>bt[t]=0);
-            fd.filter(r=>r.machine===m).forEach(r=>{ if(bt[r.type]!==undefined) bt[r.type]+=r.smu; });
+            fd.filter(r=>r.machine===m).forEach(r=>{if(bt[r.type]!==undefined)bt[r.type]+=r.smu;});
             const tot=Object.values(bt).reduce((a,b)=>a+b,0);
             const pct=total>0?tot/total*100:0;
-            return `<tr>
-              <td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${MC[i]};margin-right:6px;vertical-align:middle"></span><span style="font-weight:500">${m}</span></td>
-              ${TYPE_ORDER.map(t=>`<td style="color:${bt[t]>0?'var(--text-primary)':'var(--text-secondary)'}">${bt[t]>0?bt[t].toFixed(1):'—'}</td>`).join('')}
-              <td style="font-weight:500">${tot.toFixed(1)}</td>
-              <td><div style="font-size:11px;color:var(--text-secondary)">${pct.toFixed(1)}%</div><div class="bar-bg"><div class="bar-f" style="width:${pct.toFixed(1)}%;background:${MC[i]}"></div></div></td>
-            </tr>`;
+            return`<tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${MC[i]};margin-right:6px;vertical-align:middle"></span><span style="font-weight:500">${m}</span></td>${TYPE_ORDER.map(t=>`<td style="color:${bt[t]>0?'var(--text-primary)':'var(--text-secondary)'}">${bt[t]>0?bt[t].toFixed(1):'—'}</td>`).join('')}<td style="font-weight:500">${tot.toFixed(1)}</td><td><div style="font-size:11px;color:var(--text-secondary)">${pct.toFixed(1)}%</div><div class="bar-bg"><div class="bar-f" style="width:${pct.toFixed(1)}%;background:${MC[i]}"></div></div></td></tr>`;
           }).join('')}
         </tbody>
       </table></div>
     </div>
-
     <div class="section-hdr">5 อันดับ Downtime สูงสุด แยกตามเครื่องจักร</div>
-    <div class="top5-grid">
-      ${MACHINES.map((m,i) => top5CardHTML(m, fd, MC[i])).join('')}
-    </div>
+    <div class="top5-grid">${MACHINES.map((m,i)=>top5CardHTML(m,fd,MC[i])).join('')}</div>
   `;
 
-  document.getElementById('sel-mo').addEventListener('change', e => buildUI(mergedData, e.target.value, document.getElementById('sel-ty').value));
-  document.getElementById('sel-ty').addEventListener('change', e => buildUI(mergedData, document.getElementById('sel-mo').value, e.target.value));
-
   destroyChart('bar'); destroyChart('donut'); destroyChart('line');
-
-  charts['bar'] = new Chart(document.getElementById('c-bar'), {
-    type: 'bar',
-    data: { labels:MSHORT, datasets:[{ label:'ชั่วโมง', data:MACHINES.map(m=>parseFloat(bySMU[m].toFixed(2))), backgroundColor:MC.map(c=>c+'cc'), borderColor:MC, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{ label:ctx=>` ${ctx.parsed.y.toFixed(1)} ชม.`, title:ctx=>[MACHINES[ctx[0].dataIndex]] }} }, scales:{ x:{grid:{display:false},ticks:{color:tickColor,font:{size:11}}}, y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},callback:v=>v.toFixed(0)}} } }
-  });
-
-  document.getElementById('leg-type').innerHTML = typeLabels.map((t,i)=>`<span class="leg-item"><span class="leg-sq" style="background:${typeColors[i]}"></span>${t} ${((typeVals[i]/typeVals.reduce((a,b)=>a+b,1))*100).toFixed(0)}%</span>`).join('');
-  charts['donut'] = new Chart(document.getElementById('c-donut'), {
-    type:'doughnut',
-    data:{ labels:typeLabels, datasets:[{ data:typeVals.map(v=>parseFloat(v.toFixed(2))), backgroundColor:typeColors.map(c=>c+'cc'), borderColor:typeColors, borderWidth:1.5, hoverOffset:6 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.toFixed(1)} ชม.`}} }, cutout:'62%' }
-  });
-
-  document.getElementById('leg-trend').innerHTML = MACHINES.map((m,i)=>`<span class="leg-item"><span class="leg-sq" style="background:${MC[i]}"></span>${MSHORT[i]}</span>`).join('');
-  charts['line'] = new Chart(document.getElementById('c-line'), {
-    type:'line',
-    data:{ labels:months.map(monthLabel), datasets:MACHINES.map((m,i)=>({ label:m, data:months.map(k=>parseFloat((mmd[m][k]||0).toFixed(2))), borderColor:MC[i], backgroundColor:MC[i]+'18', borderWidth:2, borderDash:DASH_PATTERNS[i], pointRadius:3, pointBackgroundColor:MC[i], tension:0.35, fill:false })) },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} ชม.`}} }, scales:{ x:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},maxRotation:45,autoSkip:months.length>6}}, y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},callback:v=>v.toFixed(0)}} } }
-  });
+  charts['bar']=new Chart(document.getElementById('c-bar'),{type:'bar',data:{labels:MSHORT,datasets:[{label:'ชม.',data:MACHINES.map(m=>parseFloat(bySMU[m].toFixed(2))),backgroundColor:MC.map(c=>c+'cc'),borderColor:MC,borderWidth:1.5,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y.toFixed(1)} ชม.`,title:ctx=>[MACHINES[ctx[0].dataIndex]]}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:11}}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},callback:v=>v.toFixed(0)}}}}});
+  document.getElementById('leg-type').innerHTML=typeLabels.map((t,i)=>`<span class="leg-item"><span class="leg-sq" style="background:${typeColors[i]}"></span>${t} ${((typeVals[i]/typeVals.reduce((a,b)=>a+b,1))*100).toFixed(0)}%</span>`).join('');
+  charts['donut']=new Chart(document.getElementById('c-donut'),{type:'doughnut',data:{labels:typeLabels,datasets:[{data:typeVals.map(v=>parseFloat(v.toFixed(2))),backgroundColor:typeColors.map(c=>c+'cc'),borderColor:typeColors,borderWidth:1.5,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.toFixed(1)} ชม.`}}},cutout:'62%'}});
+  document.getElementById('leg-trend').innerHTML=MACHINES.map((m,i)=>`<span class="leg-item"><span class="leg-sq" style="background:${MC[i]}"></span>${MSHORT[i]}</span>`).join('');
+  charts['line']=new Chart(document.getElementById('c-line'),{type:'line',data:{labels:months.map(monthLabel),datasets:MACHINES.map((m,i)=>({label:m,data:months.map(k=>parseFloat((mmd[m][k]||0).toFixed(2))),borderColor:MC[i],backgroundColor:MC[i]+'18',borderWidth:2,borderDash:DASH_PATTERNS[i],pointRadius:3,pointBackgroundColor:MC[i],tension:0.35,fill:false}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} ชม.`}}},scales:{x:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},maxRotation:45,autoSkip:months.length>6}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},callback:v=>v.toFixed(0)}}}}});
 }
 
-/* ─── LOAD & INIT ────────────────────────────────────────────── */
+/* ─── RENDER MTTR/MTBF TAB ───────────────────────────────────── */
+function renderMTTR(selMachine) {
+  const { daily, summary } = calcMTTR_MTBF(allMerged);
+  const div = document.getElementById('tab-content');
+
+  /* availability colour helper */
+  function avColor(a) { return a>=95?'#0f6e56':a>=85?'#854f0b':'#a32d2d'; }
+  function mttrColor(v) { return v<=2?'#0f6e56':v<=6?'#854f0b':'#a32d2d'; }
+  function mtbfColor(v) { return v>=18?'#0f6e56':v>=10?'#854f0b':'#a32d2d'; }
+
+  /* ── SUMMARY SECTION ── */
+  const summaryHTML = `
+    <div class="panel-full">
+      <div class="panel-hdr"><span class="panel-title">สรุปรวม MTTR · MTBF · Availability ทุกเครื่องจักร</span></div>
+      <div class="mttr-info">
+        <strong>MTTR</strong> (Mean Time To Repair) = รวม Downtime ÷ จำนวนครั้ง Downtime &nbsp;|&nbsp;
+        <strong>MTBF</strong> (Mean Time Between Failures) = รวม Uptime ÷ จำนวนครั้ง Downtime &nbsp;|&nbsp;
+        <strong>Availability</strong> = Uptime ÷ (Uptime + Downtime) × 100 &nbsp;|&nbsp; Base = 24 ชม./วัน
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr>
+          <th>เครื่องจักร</th>
+          <th class="num-right">วันที่มี Downtime</th>
+          <th class="num-right">จำนวนครั้ง</th>
+          <th class="num-right">รวม Downtime (ชม.)</th>
+          <th class="num-right">รวม Uptime (ชม.)</th>
+          <th class="num-right">MTTR (ชม./ครั้ง)</th>
+          <th class="num-right">MTBF (ชม./ครั้ง)</th>
+          <th class="num-right">Availability (%)</th>
+        </tr></thead>
+        <tbody>
+          ${MACHINES.map((m,i)=>{
+            const s=summary[m];
+            if(!s||s.totalEvents===0) return `<tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${MC[i]};margin-right:6px;vertical-align:middle"></span><span style="font-weight:500">${m}</span></td><td colspan="7" style="color:var(--text-secondary);text-align:center">ไม่มีข้อมูล</td></tr>`;
+            return `<tr>
+              <td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${MC[i]};margin-right:6px;vertical-align:middle"></span><span style="font-weight:500">${m}</span></td>
+              <td class="num-right">${s.totalDays}</td>
+              <td class="num-right">${s.totalEvents}</td>
+              <td class="num-right">${s.totalDowntime.toFixed(1)}</td>
+              <td class="num-right">${s.totalUptime.toFixed(1)}</td>
+              <td class="num-right"><span style="color:${mttrColor(s.mttr)}">${s.mttr.toFixed(2)}</span></td>
+              <td class="num-right"><span style="color:${mtbfColor(s.mtbf)}">${s.mtbf.toFixed(2)}</span></td>
+              <td class="num-right"><span style="color:${avColor(s.availability)}">${s.availability.toFixed(1)}%</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>
+    </div>`;
+
+  /* ── MACHINE SELECTOR ── */
+  const machineSel = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--text-secondary);">รายละเอียดรายวัน:</span>
+      <div class="filter-chip">
+        <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        <select id="sel-machine-mttr">
+          ${MACHINES.map(m=>`<option value="${m}" ${selMachine===m?'selected':''}>${m}</option>`).join('')}
+        </select>
+      </div>
+    </div>`;
+
+  /* ── DAILY TABLE for selected machine ── */
+  const dm = daily[selMachine] || [];
+  const dailyHTML = dm.length === 0
+    ? `<div class="no-data">ไม่มีข้อมูล Downtime สำหรับ ${selMachine}</div>`
+    : `<div class="tbl-wrap"><table>
+        <thead><tr>
+          <th>วันที่</th>
+          <th class="num-right">จำนวนครั้ง</th>
+          <th class="num-right">Downtime (ชม.)</th>
+          <th class="num-right">Uptime (ชม.)</th>
+          <th class="num-right">MTTR (ชม./ครั้ง)</th>
+          <th class="num-right">MTBF (ชม./ครั้ง)</th>
+          <th class="num-right">Availability (%)</th>
+        </tr></thead>
+        <tbody>
+          ${dm.map(r=>{
+            const av = (r.uptime/HOURS_PER_DAY)*100;
+            return`<tr>
+              <td style="font-weight:500;white-space:nowrap">${fmtDate(r.date)}</td>
+              <td class="num-right">${r.events}</td>
+              <td class="num-right">${r.smu.toFixed(2)}</td>
+              <td class="num-right">${r.uptime.toFixed(2)}</td>
+              <td class="num-right"><span style="color:${r.mttr<=2?'#0f6e56':r.mttr<=6?'#854f0b':'#a32d2d'}">${r.mttr.toFixed(2)}</span></td>
+              <td class="num-right"><span style="color:${r.mtbf>=18?'#0f6e56':r.mtbf>=10?'#854f0b':'#a32d2d'}">${r.mtbf.toFixed(2)}</span></td>
+              <td class="num-right"><span style="color:${av>=95?'#0f6e56':av>=85?'#854f0b':'#a32d2d'}">${av.toFixed(1)}%</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>`;
+
+  /* ── DAILY CHART ── */
+  const mColor = MC[MACHINES.indexOf(selMachine)] || '#185fa5';
+  const dailyChartHTML = dm.length === 0 ? '' : `
+    <div class="grid2" style="margin-bottom:1rem;">
+      <div class="panel">
+        <div class="panel-hdr"><span class="panel-title">MTTR รายวัน — ${selMachine}</span></div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c-mttr-daily" role="img" aria-label="MTTR daily">MTTR</canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><span class="panel-title">MTBF รายวัน — ${selMachine}</span></div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c-mtbf-daily" role="img" aria-label="MTBF daily">MTBF</canvas></div>
+      </div>
+    </div>
+    <div class="panel-full">
+      <div class="panel-hdr"><span class="panel-title">Availability รายวัน — ${selMachine}</span></div>
+      <div class="chart-wrap" style="height:180px"><canvas id="c-av-daily" role="img" aria-label="Availability daily">Availability</canvas></div>
+    </div>`;
+
+  /* ── MTTR/MTBF BAR CHART ALL MACHINES ── */
+  const allMachineChartHTML = `
+    <div class="grid2" style="margin-bottom:1rem;">
+      <div class="panel">
+        <div class="panel-hdr"><span class="panel-title">MTTR เปรียบเทียบทุกเครื่อง</span></div>
+        <div class="chart-wrap" style="height:220px"><canvas id="c-mttr-all" role="img" aria-label="MTTR all machines">MTTR all</canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><span class="panel-title">MTBF เปรียบเทียบทุกเครื่อง</span></div>
+        <div class="chart-wrap" style="height:220px"><canvas id="c-mtbf-all" role="img" aria-label="MTBF all machines">MTBF all</canvas></div>
+      </div>
+    </div>`;
+
+  div.innerHTML = summaryHTML + allMachineChartHTML + machineSel + dailyChartHTML + `<div class="panel-full"><div class="panel-hdr"><span class="panel-title">รายละเอียดรายวัน — ${selMachine}</span></div>${dailyHTML}</div>`;
+
+  /* ── bind selector ── */
+  document.getElementById('sel-machine-mttr').addEventListener('change', e => renderMTTR(e.target.value));
+
+  /* ── draw charts ── */
+  ['mttr-daily','mtbf-daily','av-daily','mttr-all','mtbf-all'].forEach(id=>destroyChart(id));
+
+  if (dm.length > 0) {
+    const labels = dm.map(r=>shortDate(r.date));
+    charts['mttr-daily'] = new Chart(document.getElementById('c-mttr-daily'),{type:'bar',data:{labels,datasets:[{label:'MTTR',data:dm.map(r=>parseFloat(r.mttr.toFixed(2))),backgroundColor:mColor+'cc',borderColor:mColor,borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` MTTR: ${ctx.parsed.y.toFixed(2)} ชม.`}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:10},maxRotation:45,autoSkip:dm.length>15}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:10}},title:{display:true,text:'ชม./ครั้ง',color:tickColor,font:{size:10}}}}}});
+    charts['mtbf-daily'] = new Chart(document.getElementById('c-mtbf-daily'),{type:'bar',data:{labels,datasets:[{label:'MTBF',data:dm.map(r=>parseFloat(r.mtbf.toFixed(2))),backgroundColor:'#0f6e5699',borderColor:'#0f6e56',borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` MTBF: ${ctx.parsed.y.toFixed(2)} ชม.`}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:10},maxRotation:45,autoSkip:dm.length>15}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:10}},title:{display:true,text:'ชม./ครั้ง',color:tickColor,font:{size:10}}}}}});
+    const avData = dm.map(r=>parseFloat(((r.uptime/HOURS_PER_DAY)*100).toFixed(2)));
+    charts['av-daily'] = new Chart(document.getElementById('c-av-daily'),{type:'line',data:{labels,datasets:[{label:'Availability',data:avData,borderColor:'#534ab7',backgroundColor:'#534ab718',borderWidth:2,pointRadius:3,pointBackgroundColor:'#534ab7',tension:0.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` Availability: ${ctx.parsed.y.toFixed(1)}%`}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:10},maxRotation:45,autoSkip:dm.length>15}},y:{grid:{color:gridColor},border:{display:false},min:0,max:100,ticks:{color:tickColor,font:{size:10},callback:v=>`${v}%`}}}}});
+  }
+
+  /* all-machine comparison */
+  const mttrVals = MACHINES.map(m=>parseFloat((summary[m]?.mttr||0).toFixed(2)));
+  const mtbfVals = MACHINES.map(m=>parseFloat((summary[m]?.mtbf||0).toFixed(2)));
+  charts['mttr-all'] = new Chart(document.getElementById('c-mttr-all'),{type:'bar',data:{labels:MSHORT,datasets:[{label:'MTTR',data:mttrVals,backgroundColor:MC.map(c=>c+'cc'),borderColor:MC,borderWidth:1.5,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` MTTR: ${ctx.parsed.y.toFixed(2)} ชม./ครั้ง`,title:ctx=>[MACHINES[ctx[0].dataIndex]]}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:11}}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:10}},title:{display:true,text:'ชม./ครั้ง',color:tickColor,font:{size:10}}}}}});
+  charts['mtbf-all'] = new Chart(document.getElementById('c-mtbf-all'),{type:'bar',data:{labels:MSHORT,datasets:[{label:'MTBF',data:mtbfVals,backgroundColor:MC.map(c=>c+'88'),borderColor:MC,borderWidth:1.5,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` MTBF: ${ctx.parsed.y.toFixed(2)} ชม./ครั้ง`,title:ctx=>[MACHINES[ctx[0].dataIndex]]}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:11}}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:10}},title:{display:true,text:'ชม./ครั้ง',color:tickColor,font:{size:10}}}}}});
+}
+
+/* ─── SHELL (topbar + tabs) ──────────────────────────────────── */
+function buildShell() {
+  const months = [...new Set(allMerged.map(r=>monthKey(r.date)).filter(k=>k!=='?'))].sort();
+  const types  = [...new Set(allMerged.map(r=>r.type))].filter(Boolean).sort();
+  document.getElementById('app').innerHTML = `
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+        <div><div class="topbar-title">Machine Downtime Dashboard</div><div class="topbar-sub">Downtime · MTTR · MTBF · Availability</div></div>
+      </div>
+      <div class="filters" id="overview-filters">
+        <div class="filter-chip">
+          <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <select id="sel-mo"><option value="all">ทุกเดือน</option>${months.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join('')}</select>
+        </div>
+        <div class="filter-chip">
+          <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <select id="sel-ty"><option value="all">ทุกประเภท</option>${types.map(t=>`<option value="${t}">${t}</option>`).join('')}</select>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:1.25rem;">
+      <div class="tab-row">
+        <button class="tab-btn active" id="tab-overview">ภาพรวม Downtime</button>
+        <button class="tab-btn" id="tab-mttr">MTTR / MTBF</button>
+      </div>
+    </div>
+    <div id="tab-content"></div>
+  `;
+
+  /* tab events */
+  document.getElementById('tab-overview').addEventListener('click', ()=>{ switchTab('overview'); });
+  document.getElementById('tab-mttr').addEventListener('click', ()=>{ switchTab('mttr'); });
+
+  /* filter events */
+  document.getElementById('sel-mo').addEventListener('change', ()=>{ if(currentTab==='overview') renderOverview(getMo(),getTy()); });
+  document.getElementById('sel-ty').addEventListener('change', ()=>{ if(currentTab==='overview') renderOverview(getMo(),getTy()); });
+
+  renderOverview('all','all');
+}
+
+function getMo() { return document.getElementById('sel-mo')?.value||'all'; }
+function getTy() { return document.getElementById('sel-ty')?.value||'all'; }
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-overview').classList.toggle('active', tab==='overview');
+  document.getElementById('tab-mttr').classList.toggle('active', tab==='mttr');
+  document.getElementById('overview-filters').style.display = tab==='overview'?'flex':'none';
+  if (tab==='overview') renderOverview(getMo(), getTy());
+  else renderMTTR(MACHINES[0]);
+}
+
+/* ─── LOAD ───────────────────────────────────────────────────── */
 async function init() {
   try {
     const resp = await fetch(CSV_URL);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
     const text = await resp.text();
-    const result = Papa.parse(text, { header:true, skipEmptyLines:true });
+    const result = Papa.parse(text,{header:true,skipEmptyLines:true});
     const raw = result.data.map(parseRecord).filter(Boolean);
-    const merged = mergeConsecutive(raw);
-    buildUI(merged, 'all', 'all');
+    allMerged = mergeConsecutive(raw);
+    buildShell();
   } catch(e) {
-    document.getElementById('app').innerHTML = `
-      <div class="topbar">
-        <div class="topbar-left">
-          <div class="topbar-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
-          <div><div class="topbar-title">Machine Downtime Dashboard</div><div class="topbar-sub">ภาพรวมการหยุดเครื่องจักร</div></div>
-        </div>
-      </div>
-      <div class="err"><strong>ไม่สามารถดึงข้อมูลได้:</strong> ${e.message}<br><br>กรุณาตรวจสอบว่า Google Sheet ถูกตั้งค่า <strong>"Anyone with the link can view"</strong><br><small style="opacity:.7;margin-top:6px;display:block">URL: ${CSV_URL}</small></div>
-    `;
+    document.getElementById('app').innerHTML=`
+      <div class="topbar"><div class="topbar-left"><div class="topbar-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div><div><div class="topbar-title">Machine Downtime Dashboard</div></div></div></div>
+      <div class="err"><strong>ไม่สามารถดึงข้อมูลได้:</strong> ${e.message}<br><br>กรุณาตรวจสอบว่า Google Sheet ตั้งค่า <strong>"Anyone with the link can view"</strong><br><small style="opacity:.7;margin-top:6px;display:block">URL: ${CSV_URL}</small></div>`;
   }
 }
-
 init();
 </script>
 </body>
