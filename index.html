@@ -8,170 +8,101 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f5f5f4;
-    --bg-tertiary: #eeece7;
-    --text-primary: #1a1a18;
-    --text-secondary: #5f5e5a;
-    --border: rgba(0,0,0,0.12);
-    --border-light: rgba(0,0,0,0.07);
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 14px;
+    --bg-primary: #ffffff; --bg-secondary: #f5f5f4; --bg-tertiary: #eeece7;
+    --text-primary: #1a1a18; --text-secondary: #5f5e5a;
+    --border: rgba(0,0,0,0.12); --border-light: rgba(0,0,0,0.07);
+    --radius-md: 8px; --radius-lg: 12px; --radius-xl: 14px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg-primary: #1c1c1a;
-      --bg-secondary: #252523;
-      --bg-tertiary: #2e2e2b;
-      --text-primary: #f0ede8;
-      --text-secondary: #888780;
-      --border: rgba(255,255,255,0.12);
-      --border-light: rgba(255,255,255,0.06);
+      --bg-primary: #1c1c1a; --bg-secondary: #252523; --bg-tertiary: #2e2e2b;
+      --text-primary: #f0ede8; --text-secondary: #888780;
+      --border: rgba(255,255,255,0.12); --border-light: rgba(255,255,255,0.06);
     }
   }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    min-height: 100vh;
-    padding: 1.5rem;
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-tertiary); color: var(--text-primary); min-height: 100vh; padding: 1.5rem; }
   .db { max-width: 1100px; margin: 0 auto; }
 
-  /* ── Top Bar ─────────────────────────────────────────────── */
-  .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1.5rem; flex-wrap: wrap; gap: 12px;
-    background: var(--bg-primary); border: 0.5px solid var(--border);
-    border-radius: var(--radius-xl); padding: 1rem 1.25rem;
-  }
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 12px; background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1rem 1.25rem; }
   .topbar-left { display: flex; align-items: center; gap: 12px; }
-  .topbar-icon {
-    width: 38px; height: 38px; border-radius: 10px; background: #185fa5;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
+  .topbar-icon { width: 38px; height: 38px; border-radius: 10px; background: #185fa5; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .topbar-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .topbar-title { font-size: 17px; font-weight: 500; color: var(--text-primary); }
-  .topbar-sub   { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+  .topbar-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
 
-  /* ── Filters ─────────────────────────────────────────────── */
   .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .filter-chip {
-    display: flex; align-items: center; gap: 6px;
-    background: var(--bg-secondary); border: 0.5px solid var(--border);
-    border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--text-secondary);
-  }
+  .filter-chip { display: flex; align-items: center; gap: 6px; background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--text-secondary); }
   .filter-chip svg { flex-shrink: 0; }
-  .filter-chip select {
-    border: none; background: transparent; font-size: 12px;
-    color: var(--text-primary); outline: none; cursor: pointer; padding: 0; font-family: inherit;
-  }
+  .filter-chip select { border: none; background: transparent; font-size: 12px; color: var(--text-primary); outline: none; cursor: pointer; padding: 0; font-family: inherit; }
 
-  /* ── KPI Row ─────────────────────────────────────────────── */
   .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
-  .kpi {
-    background: var(--bg-secondary); border-radius: var(--radius-lg);
-    padding: 0.9rem 1rem; position: relative; overflow: hidden; border: 0.5px solid var(--border-light);
-  }
-  .kpi-accent   { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: var(--radius-lg) 0 0 var(--radius-lg); }
-  .kpi-label    { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
-  .kpi-val      { font-size: 21px; font-weight: 500; color: var(--text-primary); line-height: 1; }
-  .kpi-unit     { font-size: 10px; color: var(--text-secondary); margin-top: 3px; }
+  .kpi { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 0.9rem 1rem; position: relative; overflow: hidden; border: 0.5px solid var(--border-light); }
+  .kpi-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: var(--radius-lg) 0 0 var(--radius-lg); }
+  .kpi-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+  .kpi-val { font-size: 21px; font-weight: 500; color: var(--text-primary); line-height: 1; }
+  .kpi-unit { font-size: 10px; color: var(--text-secondary); margin-top: 3px; }
   .kpi-bar-wrap { height: 3px; background: var(--border); border-radius: 3px; margin-top: 8px; }
-  .kpi-bar      { height: 3px; border-radius: 3px; }
+  .kpi-bar { height: 3px; border-radius: 3px; }
 
-  /* ── Two-col Grid ───────────────────────────────────────── */
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
   @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
 
-  /* ── Panels ─────────────────────────────────────────────── */
-  .panel      { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1rem 1.25rem; }
+  .panel { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1rem 1.25rem; }
   .panel-full { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-xl); padding: 1rem 1.25rem; margin-bottom: 1rem; }
-  .panel-hdr  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .panel-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .panel-title { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; }
-  .chart-wrap  { position: relative; width: 100%; }
+  .chart-wrap { position: relative; width: 100%; }
 
-  /* ── Legend ─────────────────────────────────────────────── */
-  .leg      { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .leg { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
   .leg-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-secondary); }
-  .leg-sq   { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .leg-sq { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 
-  /* ── Summary Table ──────────────────────────────────────── */
   .tbl-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th {
-    font-size: 10px; font-weight: 500; color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: .05em;
-    padding: 5px 8px; border-bottom: 0.5px solid var(--border); text-align: left; white-space: nowrap;
-  }
+  th { font-size: 10px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; padding: 5px 8px; border-bottom: 0.5px solid var(--border); text-align: left; white-space: nowrap; }
   td { padding: 7px 8px; color: var(--text-primary); border-bottom: 0.5px solid var(--border-light); }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--bg-secondary); transition: background .15s; }
-  .pill   { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; }
   .bar-bg { background: var(--border); border-radius: 4px; height: 5px; margin-top: 4px; }
-  .bar-f  { height: 5px; border-radius: 4px; }
+  .bar-f { height: 5px; border-radius: 4px; }
 
-  /* ── Top-5 Section ──────────────────────────────────────── */
-  .section-hdr {
-    font-size: 11px; font-weight: 500; color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: .07em; margin: 1.5rem 0 .75rem;
-  }
-  .top5-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem; margin-bottom: 1.5rem;
-  }
+  .section-hdr { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .07em; margin: 1.5rem 0 .75rem; }
+
+  .top5-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
   .top5-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
   .top5-card-hdr { display: flex; align-items: center; gap: 10px; padding: .75rem 1rem; border-bottom: 0.5px solid var(--border); }
-  .top5-dot     { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .top5-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .top5-machine { font-size: 13px; font-weight: 500; color: var(--text-primary); }
-  .top5-total   { margin-left: auto; font-size: 11px; color: var(--text-secondary); }
-  .top5-item {
-    display: flex; align-items: flex-start; gap: 8px;
-    padding: .65rem 1rem; border-bottom: 0.5px solid var(--border-light);
-  }
+  .top5-total { margin-left: auto; font-size: 11px; color: var(--text-secondary); }
+  .top5-item { display: flex; align-items: flex-start; gap: 8px; padding: .65rem 1rem; border-bottom: 0.5px solid var(--border-light); }
   .top5-item:last-child { border-bottom: none; }
-  .top5-rank {
-    width: 18px; height: 18px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 500; flex-shrink: 0; margin-top: 1px;
-  }
-  .top5-info   { flex: 1; min-width: 0; }
+  .top5-rank { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; flex-shrink: 0; margin-top: 1px; }
+  .top5-info { flex: 1; min-width: 0; }
   .top5-detail { font-size: 11px; color: var(--text-primary); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .top5-meta   { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
-  .top5-date   { font-size: 10px; color: var(--text-secondary); }
-  .top5-type   { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 9px; font-weight: 500; }
-  .top5-smu    { font-size: 12px; font-weight: 500; flex-shrink: 0; text-align: right; margin-top: 1px; }
+  .top5-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+  .top5-date { font-size: 10px; color: var(--text-secondary); }
+  .top5-type { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 9px; font-weight: 500; }
+  .top5-smu { font-size: 12px; font-weight: 500; flex-shrink: 0; text-align: right; margin-top: 1px; }
   .top5-smu-unit { font-size: 9px; font-weight: 400; }
+  .merged-badge { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border-radius: 10px; font-size: 9px; font-weight: 500; background: #534ab722; color: #534ab7; }
   .no-data { padding: 1.5rem 1rem; text-align: center; font-size: 12px; color: var(--text-secondary); }
-
-  /* ── States ─────────────────────────────────────────────── */
   .load-msg { text-align: center; padding: 4rem; color: var(--text-secondary); font-size: 14px; }
-  .err {
-    background: #fcebeb; color: #a32d2d;
-    border-radius: var(--radius-lg); padding: 1rem 1.25rem;
-    font-size: 13px; margin: 1rem 0; border: 0.5px solid #f09595;
-  }
-  @media (prefers-color-scheme: dark) {
-    .err { background: #2e1515; color: #f09595; border-color: #791f1f; }
-  }
+  .err { background: #fcebeb; color: #a32d2d; border-radius: var(--radius-lg); padding: 1rem 1.25rem; font-size: 13px; margin: 1rem 0; border: 0.5px solid #f09595; }
+  @media (prefers-color-scheme: dark) { .err { background: #2e1515; color: #f09595; border-color: #791f1f; } }
 </style>
 </head>
 <body>
-<div class="db" id="app">
-  <div class="load-msg">กำลังโหลดข้อมูล...</div>
-</div>
+<div class="db" id="app"><div class="load-msg">กำลังโหลดข้อมูล...</div></div>
 
 <script>
-/* ─── CONFIG ──────────────────────────────────────────────────── */
+/* ─── CONFIG ─────────────────────────────────────────────────── */
 const SHEET_ID = '1ygTva5iEXjhi-LKMIJAF5909xux1wmSVKCWuZbFDrZA';
 const GID      = '103270503';
 const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
 
-/* ─── CONSTANTS ───────────────────────────────────────────────── */
+/* ─── CONSTANTS ──────────────────────────────────────────────── */
 const MACHINES = ['System','Spreader','Crusher #1','Crusher #2','Crusher #3','Bucket Wheel #1','Bucket Wheel #2'];
 const MSHORT   = ['Sys','SPD','CR1','CR2','CR3','BW1','BW2'];
 const MALIAS   = {
@@ -190,33 +121,117 @@ const TH_MONTHS     = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.�
 const RANK_BG       = ['#185fa5','#378add','#85b7eb','#b5d4f4','#e6f1fb'];
 const RANK_TXT      = ['#fff','#fff','#0c447c','#0c447c','#185fa5'];
 
-/* ─── GLOBALS ─────────────────────────────────────────────────── */
 let allData = [], charts = {};
 const isDark    = window.matchMedia('(prefers-color-scheme: dark)').matches;
 const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
 const tickColor = '#888780';
 
-/* ─── HELPERS ─────────────────────────────────────────────────── */
+/* ─── PARSE HELPERS ──────────────────────────────────────────── */
 function normMachine(loc) { return loc ? (MALIAS[loc.trim().toLowerCase()] || null) : null; }
+
+/* Convert "HH:MM" string + date object → absolute minutes from epoch-start-of-day */
+function parseTimeStr(timeStr) {
+  if (!timeStr) return null;
+  const t = timeStr.trim();
+  const m = t.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  return parseInt(m[1]) * 60 + parseInt(m[2]);
+}
 
 function parseRecord(row) {
   const machine = normMachine(row['Location']);
   if (!machine) return null;
   const smu = parseFloat(row['SMU']);
   if (isNaN(smu) || smu <= 0) return null;
-  const raw = row['Date']; let d = null;
-  if (raw) { const p = raw.split('/'); if (p.length === 3) d = new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0])); }
-  return { date:d, machine, smu, type:(row['Type']||'').trim()||'Other', detail:(row['Detail']||'').trim() };
+
+  const raw = row['Date']; let dateObj = null;
+  if (raw) { const p = raw.split('/'); if (p.length === 3) dateObj = new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0])); }
+
+  const startMin  = parseTimeStr(row['Start']);
+  const finishMin = parseTimeStr(row['Finish']);
+
+  /* Compute absolute datetime minutes for start/finish */
+  let absStart = null, absFinish = null;
+  if (dateObj && startMin !== null && finishMin !== null) {
+    const base = dateObj.getTime() / 60000; /* date in minutes */
+    absStart  = base + startMin;
+    /* If finish <= start → crosses midnight → finish is next day */
+    absFinish = base + finishMin + (finishMin <= startMin ? 1440 : 0);
+  }
+
+  return {
+    date: dateObj, machine, smu,
+    type: (row['Type'] || '').trim() || 'Other',
+    detail: (row['Detail'] || '').trim(),
+    startMin, finishMin, absStart, absFinish,
+    mergedCount: 1,
+  };
 }
 
+/* ─── MERGE CONSECUTIVE DOWNTIME ─────────────────────────────── */
+/*
+  Two records are "consecutive" if:
+    1. Same machine
+    2. Same type
+    3. Same detail (normalised)
+    4. absFinish of record A === absStart of record B
+       (i.e. they are back-to-back across shift boundary 7:00 or 19:00)
+*/
+function normaliseDetail(d) {
+  return (d || '').toLowerCase().replace(/\s+/g,' ').trim();
+}
+
+function mergeConsecutive(records) {
+  /* Sort by machine → absStart so we can do one linear pass */
+  const sorted = [...records].sort((a, b) => {
+    if (a.machine !== b.machine) return a.machine.localeCompare(b.machine);
+    return (a.absStart || 0) - (b.absStart || 0);
+  });
+
+  const merged = [];
+
+  for (const rec of sorted) {
+    if (!rec.absStart || !rec.absFinish) { merged.push({...rec}); continue; }
+
+    /* Try to find an existing merged record to extend */
+    let found = false;
+    for (let i = merged.length - 1; i >= 0; i--) {
+      const m = merged[i];
+      if (m.machine !== rec.machine) break; /* different machine (sorted) */
+      if (m.absFinish === null) continue;
+
+      /* Check continuity: m ends exactly where rec starts */
+      if (
+        m.absFinish === rec.absStart &&
+        m.type === rec.type &&
+        normaliseDetail(m.detail) === normaliseDetail(rec.detail)
+      ) {
+        /* Merge: extend finish, add SMU */
+        m.absFinish    = rec.absFinish;
+        m.smu          = parseFloat((m.smu + rec.smu).toFixed(4));
+        m.mergedCount  += 1;
+        /* Keep earliest date for display */
+        found = true;
+        break;
+      }
+    }
+    if (!found) merged.push({...rec});
+  }
+
+  return merged;
+}
+
+/* ─── OTHER HELPERS ──────────────────────────────────────────── */
 function monthKey(d)   { return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` : '?'; }
 function monthLabel(k) { if (k==='?') return '?'; const [y,m]=k.split('-'); return `${TH_MONTHS[parseInt(m)-1]} ${y}`; }
 function fmtDate(d)    { return d ? `${d.getDate()} ${TH_MONTHS[d.getMonth()]} ${d.getFullYear()}` : ''; }
-function filterData(mo,ty) { return allData.filter(r => (mo==='all'||monthKey(r.date)===mo) && (ty==='all'||r.type===ty)); }
-function sumSMU(arr)   { return arr.reduce((s,r) => s+r.smu, 0); }
+function filterData(data, mo, ty) {
+  return data.filter(r => (mo==='all' || monthKey(r.date)===mo) && (ty==='all' || r.type===ty));
+}
+function sumSMU(arr) { return arr.reduce((s,r) => s+r.smu, 0); }
 function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
 
-/* ─── TOP-5 CARD ──────────────────────────────────────────────── */
+/* ─── TOP-5 CARD ─────────────────────────────────────────────── */
 function top5CardHTML(machine, fd, color) {
   const items  = fd.filter(r => r.machine===machine).sort((a,b) => b.smu-a.smu).slice(0,5);
   const total  = sumSMU(fd.filter(r => r.machine===machine));
@@ -241,6 +256,7 @@ function top5CardHTML(machine, fd, color) {
             <div class="top5-meta">
               <span class="top5-date">${fmtDate(r.date)}</span>
               <span class="top5-type" style="background:${(TC[r.type]||'#888')}22;color:${TC[r.type]||'#888'}">${r.type}</span>
+              ${r.mergedCount > 1 ? `<span class="merged-badge">รวม ${r.mergedCount} กะ</span>` : ''}
             </div>
             <div style="height:3px;background:var(--border);border-radius:3px;margin-top:5px">
               <div style="height:3px;border-radius:3px;width:${(r.smu/maxSmu*100).toFixed(1)}%;background:${color}"></div>
@@ -251,20 +267,27 @@ function top5CardHTML(machine, fd, color) {
     </div>`;
 }
 
-/* ─── BUILD DASHBOARD ─────────────────────────────────────────── */
-function buildUI(mo, ty) {
-  const fd    = filterData(mo, ty);
+/* ─── BUILD DASHBOARD ────────────────────────────────────────── */
+function buildUI(mergedData, mo, ty) {
+  const fd    = filterData(mergedData, mo, ty);
   const total = sumSMU(fd);
+
   const bySMU = {}; MACHINES.forEach(m => bySMU[m]=0);
   fd.forEach(r => { if (bySMU[r.machine]!==undefined) bySMU[r.machine]+=r.smu; });
+
   const byType = {}; TYPE_ORDER.forEach(t => byType[t]=0);
   fd.forEach(r => { if (byType[r.type]!==undefined) byType[r.type]+=r.smu; });
-  const months = [...new Set(allData.map(r=>monthKey(r.date)).filter(k=>k!=='?'))].sort();
-  const types  = [...new Set(allData.map(r=>r.type))].filter(Boolean).sort();
+
+  const months = [...new Set(mergedData.map(r=>monthKey(r.date)).filter(k=>k!=='?'))].sort();
+  const types  = [...new Set(mergedData.map(r=>r.type))].filter(Boolean).sort();
   const maxVal = Math.max(...Object.values(bySMU), 1);
+
   const mmd = {};
-  MACHINES.forEach(m => { mmd[m]={}; months.forEach(k => mmd[m][k]=0); });
-  allData.filter(r=>ty==='all'||r.type===ty).forEach(r => { const k=monthKey(r.date); if(mmd[r.machine]&&k!=='?') mmd[r.machine][k]+=r.smu; });
+  MACHINES.forEach(m => { mmd[m]={}; months.forEach(k=>mmd[m][k]=0); });
+  mergedData.filter(r => ty==='all'||r.type===ty).forEach(r => {
+    const k=monthKey(r.date); if(mmd[r.machine]&&k!=='?') mmd[r.machine][k]+=r.smu;
+  });
+
   const typeLabels = TYPE_ORDER.filter(t=>byType[t]>0);
   const typeVals   = typeLabels.map(t=>byType[t]);
   const typeColors = typeLabels.map(t=>TC[t]||'#888');
@@ -273,7 +296,7 @@ function buildUI(mo, ty) {
     <div class="topbar">
       <div class="topbar-left">
         <div class="topbar-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
-        <div><div class="topbar-title">Machine Downtime Dashboard</div><div class="topbar-sub">ภาพรวมการหยุดเครื่องจักร · ข้อมูลจาก Google Sheets</div></div>
+        <div><div class="topbar-title">Machine Downtime Dashboard</div><div class="topbar-sub">ภาพรวมการหยุดเครื่องจักร · รวม Downtime ต่อเนื่องข้ามกะอัตโนมัติ</div></div>
       </div>
       <div class="filters">
         <div class="filter-chip">
@@ -341,42 +364,42 @@ function buildUI(mo, ty) {
     </div>
   `;
 
-  document.getElementById('sel-mo').addEventListener('change', e => buildUI(e.target.value, document.getElementById('sel-ty').value));
-  document.getElementById('sel-ty').addEventListener('change', e => buildUI(document.getElementById('sel-mo').value, e.target.value));
+  document.getElementById('sel-mo').addEventListener('change', e => buildUI(mergedData, e.target.value, document.getElementById('sel-ty').value));
+  document.getElementById('sel-ty').addEventListener('change', e => buildUI(mergedData, document.getElementById('sel-mo').value, e.target.value));
 
   destroyChart('bar'); destroyChart('donut'); destroyChart('line');
 
   charts['bar'] = new Chart(document.getElementById('c-bar'), {
     type: 'bar',
-    data: { labels: MSHORT, datasets: [{ label:'ชั่วโมง', data: MACHINES.map(m=>parseFloat(bySMU[m].toFixed(2))), backgroundColor: MC.map(c=>c+'cc'), borderColor: MC, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
+    data: { labels:MSHORT, datasets:[{ label:'ชั่วโมง', data:MACHINES.map(m=>parseFloat(bySMU[m].toFixed(2))), backgroundColor:MC.map(c=>c+'cc'), borderColor:MC, borderWidth:1.5, borderRadius:6, borderSkipped:false }] },
     options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{ label:ctx=>` ${ctx.parsed.y.toFixed(1)} ชม.`, title:ctx=>[MACHINES[ctx[0].dataIndex]] }} }, scales:{ x:{grid:{display:false},ticks:{color:tickColor,font:{size:11}}}, y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},callback:v=>v.toFixed(0)}} } }
   });
 
   document.getElementById('leg-type').innerHTML = typeLabels.map((t,i)=>`<span class="leg-item"><span class="leg-sq" style="background:${typeColors[i]}"></span>${t} ${((typeVals[i]/typeVals.reduce((a,b)=>a+b,1))*100).toFixed(0)}%</span>`).join('');
   charts['donut'] = new Chart(document.getElementById('c-donut'), {
-    type: 'doughnut',
-    data: { labels:typeLabels, datasets:[{ data:typeVals.map(v=>parseFloat(v.toFixed(2))), backgroundColor:typeColors.map(c=>c+'cc'), borderColor:typeColors, borderWidth:1.5, hoverOffset:6 }] },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.toFixed(1)} ชม.`}} }, cutout:'62%' }
+    type:'doughnut',
+    data:{ labels:typeLabels, datasets:[{ data:typeVals.map(v=>parseFloat(v.toFixed(2))), backgroundColor:typeColors.map(c=>c+'cc'), borderColor:typeColors, borderWidth:1.5, hoverOffset:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.toFixed(1)} ชม.`}} }, cutout:'62%' }
   });
 
   document.getElementById('leg-trend').innerHTML = MACHINES.map((m,i)=>`<span class="leg-item"><span class="leg-sq" style="background:${MC[i]}"></span>${MSHORT[i]}</span>`).join('');
   charts['line'] = new Chart(document.getElementById('c-line'), {
-    type: 'line',
-    data: { labels:months.map(monthLabel), datasets:MACHINES.map((m,i)=>({ label:m, data:months.map(k=>parseFloat((mmd[m][k]||0).toFixed(2))), borderColor:MC[i], backgroundColor:MC[i]+'18', borderWidth:2, borderDash:DASH_PATTERNS[i], pointRadius:3, pointBackgroundColor:MC[i], tension:0.35, fill:false })) },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} ชม.`}} }, scales:{ x:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},maxRotation:45,autoSkip:months.length>6}}, y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},callback:v=>v.toFixed(0)}} } }
+    type:'line',
+    data:{ labels:months.map(monthLabel), datasets:MACHINES.map((m,i)=>({ label:m, data:months.map(k=>parseFloat((mmd[m][k]||0).toFixed(2))), borderColor:MC[i], backgroundColor:MC[i]+'18', borderWidth:2, borderDash:DASH_PATTERNS[i], pointRadius:3, pointBackgroundColor:MC[i], tension:0.35, fill:false })) },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} ชม.`}} }, scales:{ x:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},maxRotation:45,autoSkip:months.length>6}}, y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},callback:v=>v.toFixed(0)}} } }
   });
 }
 
-/* ─── LOAD DATA ───────────────────────────────────────────────── */
+/* ─── LOAD & INIT ────────────────────────────────────────────── */
 async function init() {
   try {
     const resp = await fetch(CSV_URL);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const text = await resp.text();
     const result = Papa.parse(text, { header:true, skipEmptyLines:true });
-    allData = result.data.map(parseRecord).filter(Boolean);
-    if (!allData.length) throw new Error('ไม่พบข้อมูลในชีต');
-    buildUI('all', 'all');
+    const raw = result.data.map(parseRecord).filter(Boolean);
+    const merged = mergeConsecutive(raw);
+    buildUI(merged, 'all', 'all');
   } catch(e) {
     document.getElementById('app').innerHTML = `
       <div class="topbar">
