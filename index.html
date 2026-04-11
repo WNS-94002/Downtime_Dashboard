@@ -216,22 +216,20 @@
     /* ── Top-5 compact table ── */
     .rpt-top5-sub { font-size:7.5pt; font-weight:700; margin:4pt 0 2pt; color:#333 !important; }
 
-    /* ── Signature block — always at bottom of each page ── */
-    .rpt-sig-spacer { flex:1; min-height:6pt; }
+    /* ── Signature block — compact, at bottom of each page ── */
+    .rpt-sig-spacer { flex:1; min-height:4pt; }
     .rpt-sig-block {
-      margin-top:8pt;
-      border-top:0.5pt solid #ccc;
-      padding-top:6pt;
+      margin-top:6pt;
+      border-top:0.5pt solid #bbb;
+      padding-top:4pt;
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:20pt;
+      gap:16pt;
     }
     .rpt-sig-box { text-align:center; }
-    .rpt-sig-role { font-size:8pt; font-weight:700; color:#333 !important; margin-bottom:18pt; }
-    .rpt-sig-line { border-bottom:0.5pt solid #666; margin-bottom:4pt; height:0; }
-    .rpt-sig-name { font-size:7.5pt; color:#444 !important; }
-    .rpt-sig-date { font-size:7pt; color:#888 !important; margin-top:2pt; }
-    .rpt-sig-label { font-size:6.5pt; color:#999 !important; margin-top:1pt; }
+    .rpt-sig-role { font-size:7.5pt; font-weight:700; color:#222 !important; margin-bottom:14pt; }
+    .rpt-sig-line { border-bottom:0.5pt solid #555; margin-bottom:3pt; }
+    .rpt-sig-detail { font-size:7pt; color:#555 !important; line-height:1.5; }
 
     .no-print { display:none !important; }
   }
@@ -555,23 +553,19 @@ function buildPDFReport(groupKey) {
   function mClass(v)  { return v<=2?'g':v<=6?'y':'r'; }
   function bClass(v)  { return v>=18?'g':v>=10?'y':'r'; }
 
-  /* ── Signature block (shared) ── */
+  /* ── Signature block (shared, compact) ── */
   const sigBlock = `
     <div class="rpt-sig-spacer"></div>
     <div class="rpt-sig-block">
       <div class="rpt-sig-box">
         <div class="rpt-sig-role">ผู้นำเสนอ / Prepared by</div>
         <div class="rpt-sig-line"></div>
-        <div class="rpt-sig-name">ชื่อ: ............................................</div>
-        <div class="rpt-sig-date">ตำแหน่ง: ............................................</div>
-        <div class="rpt-sig-label">วันที่: ............................................</div>
+        <div class="rpt-sig-detail">ชื่อ / Name: ........................................&nbsp;&nbsp; ตำแหน่ง: ........................&nbsp;&nbsp; วันที่: ..................</div>
       </div>
       <div class="rpt-sig-box">
         <div class="rpt-sig-role">ผู้รับรอง / Approved by</div>
         <div class="rpt-sig-line"></div>
-        <div class="rpt-sig-name">ชื่อ: ............................................</div>
-        <div class="rpt-sig-date">ตำแหน่ง: ............................................</div>
-        <div class="rpt-sig-label">วันที่: ............................................</div>
+        <div class="rpt-sig-detail">ชื่อ / Name: ........................................&nbsp;&nbsp; ตำแหน่ง: ........................&nbsp;&nbsp; วันที่: ..................</div>
       </div>
     </div>`;
 
@@ -583,10 +577,11 @@ function buildPDFReport(groupKey) {
     const byType = {}; TYPE_ORDER.forEach(t=>byType[t]=0);
     mData.forEach(r=>{ if(byType[r.type]!==undefined) byType[r.type]+=r.smu; });
     const dailyR = (daily[m]||[]).filter(r=>r.events>0||r.allSMU>0);
-    const top5m  = mData.sort((a,b)=>b.smu-a.smu).slice(0,5);
+
 
     /* combined MA for the group (shown on each page of multi-machine groups) */
     const showGroupMA = grp.machines.length > 1;
+    const top3m = mData.sort((a,b)=>b.smu-a.smu).slice(0,3);
 
     return `
     <!-- PAGE: ${m} -->
@@ -642,25 +637,6 @@ function buildPDFReport(groupKey) {
         </div>
       </div>
 
-      <!-- DOWNTIME BY TYPE -->
-      <div class="rpt-sec-title accent">Downtime แยกตามประเภท (ชั่วโมง)</div>
-      <div class="rpt-table-wrap">
-        <table class="rpt-table">
-          <thead><tr>
-            <th>เครื่องจักร</th>
-            ${TYPE_ORDER.map(t=>`<th class="num">${t}</th>`).join('')}
-            <th class="num">รวม (ชม.)</th>
-          </tr></thead>
-          <tbody>
-            <tr>
-              <td class="bold">${m}</td>
-              ${TYPE_ORDER.map(t=>`<td class="num">${byType[t]>0?byType[t].toFixed(1):'—'}</td>`).join('')}
-              <td class="num bold">${totalDT.toFixed(1)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
       <!-- DAILY MTTR/MTBF/MA TABLE -->
       <div class="rpt-sec-title accent">MTTR · MTBF · MA% รายวัน</div>
       <div class="rpt-table-wrap">
@@ -690,21 +666,21 @@ function buildPDFReport(groupKey) {
           </table>`}
       </div>
 
-      <!-- TOP-5 DOWNTIME EVENTS -->
-      <div class="rpt-sec-title accent">5 อันดับ Downtime สูงสุด</div>
+      <!-- TOP-3 DOWNTIME EVENTS -->
+      <div class="rpt-sec-title accent">3 อันดับ Downtime สูงสุด</div>
       <div class="rpt-table-wrap">
-        ${top5m.length === 0
+        ${top3m.length === 0
           ? `<p style="font-size:8pt;color:#999;padding:4pt 0">ไม่มีข้อมูล</p>`
           : `<table class="rpt-table">
             <thead><tr>
-              <th style="width:18pt">#</th>
+              <th style="width:16pt">#</th>
               <th>รายละเอียด</th>
               <th style="width:52pt">วันที่</th>
-              <th style="width:30pt">ประเภท</th>
-              <th class="num" style="width:36pt">ชั่วโมง</th>
+              <th style="width:28pt">ประเภท</th>
+              <th class="num" style="width:34pt">ชั่วโมง</th>
             </tr></thead>
             <tbody>
-              ${top5m.map((r,i)=>`<tr>
+              ${top3m.map((r,i)=>`<tr>
                 <td class="bold" style="color:${color}">${i+1}</td>
                 <td style="font-size:7pt">${r.detail||'—'}${r.mergedCount>1?` <span style="color:#534ab7;font-size:6.5pt">(รวม ${r.mergedCount} กะ)</span>`:''}</td>
                 <td style="white-space:nowrap;font-size:7pt">${fmtDate(r.date)}</td>
