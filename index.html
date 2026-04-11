@@ -129,46 +129,111 @@
   @media(prefers-color-scheme:dark){ .err { background:#2e1515; color:#f09595; border-color:#791f1f; } }
 
   /* ═══════════════════════════════════════════════════════════
-     PRINT STYLES  (รัน @media print เมื่อ window.print())
+     PRINT STYLES  — 1 machine = 1 page, A4 Portrait
      ═══════════════════════════════════════════════════════════ */
   @media print {
-    @page { size: A4 landscape; margin: 12mm 10mm; }
-    body { background:#fff !important; color:#000 !important; padding:0; font-size:10pt; }
+    @page { size: A4 portrait; margin: 10mm 12mm 10mm 12mm; }
+    body { background:#fff !important; color:#000 !important; padding:0; font-size:9pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 
-    /* hide everything except the report */
+    /* hide dashboard, show only report */
     .db > *:not(#print-report) { display:none !important; }
     #print-report { display:block !important; }
 
-    #print-report * { color:#000 !important; background:#fff !important; border-color:#ccc !important; }
+    /* ── Machine page wrapper: force one per page ── */
+    .rpt-machine-page {
+      page-break-after: always;
+      page-break-inside: avoid;
+      display: flex;
+      flex-direction: column;
+      min-height: 257mm; /* A4 portrait - margins */
+      box-sizing: border-box;
+    }
+    .rpt-machine-page:last-child { page-break-after: auto; }
 
-    .rpt-section { page-break-inside:avoid; margin-bottom:14pt; }
-    .rpt-section-title { font-size:11pt; font-weight:600; border-bottom:1pt solid #185fa5; padding-bottom:4pt; margin-bottom:8pt; color:#185fa5 !important; }
-    .rpt-sub-title { font-size:9pt; font-weight:600; margin-bottom:4pt; color:#333 !important; }
+    /* ── Report header (top of each machine page) ── */
+    .rpt-page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 6pt;
+      padding-bottom: 5pt;
+      border-bottom: 2pt solid var(--rpt-color, #185fa5);
+    }
+    .rpt-page-header-title { font-size:14pt; font-weight:700; }
+    .rpt-page-header-sub   { font-size:8pt;  color:#555 !important; margin-top:2pt; }
+    .rpt-page-header-meta  { font-size:7.5pt; color:#555 !important; text-align:right; line-height:1.6; }
 
-    .rpt-kpi-row { display:flex; gap:8pt; margin-bottom:10pt; flex-wrap:wrap; }
-    .rpt-kpi { border:0.5pt solid #ccc; border-radius:4pt; padding:6pt 10pt; min-width:90pt; }
-    .rpt-kpi-label { font-size:7pt; color:#666 !important; text-transform:uppercase; letter-spacing:.04em; margin-bottom:2pt; }
-    .rpt-kpi-val { font-size:16pt; font-weight:600; }
-    .rpt-kpi-unit { font-size:7pt; color:#666 !important; }
+    /* ── Section title ── */
+    .rpt-sec-title {
+      font-size:8pt; font-weight:700; text-transform:uppercase;
+      letter-spacing:.05em; margin:6pt 0 4pt;
+      padding-bottom:2pt; border-bottom:0.5pt solid #ccc;
+      color:#333 !important;
+    }
+    .rpt-sec-title.accent { border-bottom-color: var(--rpt-color, #185fa5) !important; }
 
-    .rpt-ma-row { display:flex; gap:8pt; margin-bottom:10pt; flex-wrap:wrap; }
-    .rpt-ma-card { border:0.5pt solid #ccc; border-radius:4pt; padding:6pt 10pt; min-width:100pt; text-align:center; }
-    .rpt-ma-label { font-size:7pt; color:#666 !important; text-transform:uppercase; margin-bottom:3pt; }
-    .rpt-ma-val { font-size:18pt; font-weight:700; }
+    /* ── KPI bar (summary numbers) ── */
+    .rpt-kpi-bar {
+      display:flex; gap:6pt; margin-bottom:6pt; flex-wrap:nowrap;
+    }
+    .rpt-kpi-box {
+      flex:1; border:0.5pt solid #ddd; border-radius:3pt;
+      padding:4pt 6pt; min-width:0;
+      border-left: 2pt solid var(--rpt-color, #ccc) !important;
+    }
+    .rpt-kpi-box-label { font-size:6.5pt; color:#666 !important; text-transform:uppercase; letter-spacing:.04em; margin-bottom:1pt; }
+    .rpt-kpi-box-val   { font-size:13pt; font-weight:700; line-height:1.1; }
+    .rpt-kpi-box-unit  { font-size:6.5pt; color:#777 !important; margin-top:1pt; }
+    .rpt-kpi-ma        { background:#f0f7ff !important; border-left-width:3pt !important; }
 
-    table { width:100%; border-collapse:collapse; font-size:8pt; }
-    th { background:#f0f0f0 !important; color:#000 !important; padding:4pt 6pt; border:0.5pt solid #bbb; font-size:7pt; text-align:left; }
-    td { padding:3pt 6pt; border:0.5pt solid #ddd; vertical-align:middle; }
-    tr:nth-child(even) td { background:#fafafa !important; }
+    /* ── Sub-machine MA row (for groups with 2 machines) ── */
+    .rpt-submachine-row { display:flex; gap:6pt; margin-bottom:6pt; }
+    .rpt-submachine-card {
+      flex:1; border:0.5pt solid #ddd; border-radius:3pt; padding:4pt 6pt;
+      display:flex; align-items:center; gap:8pt;
+    }
+    .rpt-submachine-name { font-size:8pt; font-weight:600; }
+    .rpt-submachine-ma   { font-size:14pt; font-weight:700; margin-left:auto; }
+    .rpt-submachine-detail { font-size:7pt; color:#666 !important; }
 
-    .rpt-chart-wrap { width:100%; height:140pt; margin-bottom:8pt; }
-    .rpt-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10pt; margin-bottom:10pt; }
-    .rpt-panel { border:0.5pt solid #ccc; border-radius:4pt; padding:8pt; }
-    .rpt-panel-title { font-size:8pt; font-weight:600; color:#333 !important; margin-bottom:6pt; text-transform:uppercase; }
+    /* ── Tables ── */
+    .rpt-table-wrap { overflow:hidden; margin-bottom:6pt; }
+    .rpt-table { width:100%; border-collapse:collapse; font-size:7.5pt; }
+    .rpt-table th {
+      background:#f4f4f4 !important; color:#222 !important;
+      padding:3pt 5pt; border:0.5pt solid #ccc;
+      font-size:7pt; font-weight:700; text-align:left; white-space:nowrap;
+    }
+    .rpt-table td { padding:2.5pt 5pt; border:0.5pt solid #e0e0e0; vertical-align:middle; }
+    .rpt-table tr:nth-child(even) td { background:#fafafa !important; }
+    .rpt-table .tr { text-align:right; }
+    .rpt-table .num { text-align:right; font-variant-numeric:tabular-nums; }
+    .rpt-table .bold { font-weight:700; }
+    .rpt-table .g  { color:#0f6e56 !important; font-weight:700; }
+    .rpt-table .y  { color:#854f0b !important; font-weight:700; }
+    .rpt-table .r  { color:#a32d2d !important; font-weight:700; }
+
+    /* ── Top-5 compact table ── */
+    .rpt-top5-sub { font-size:7.5pt; font-weight:700; margin:4pt 0 2pt; color:#333 !important; }
+
+    /* ── Signature block — always at bottom of each page ── */
+    .rpt-sig-spacer { flex:1; min-height:6pt; }
+    .rpt-sig-block {
+      margin-top:8pt;
+      border-top:0.5pt solid #ccc;
+      padding-top:6pt;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:20pt;
+    }
+    .rpt-sig-box { text-align:center; }
+    .rpt-sig-role { font-size:8pt; font-weight:700; color:#333 !important; margin-bottom:18pt; }
+    .rpt-sig-line { border-bottom:0.5pt solid #666; margin-bottom:4pt; height:0; }
+    .rpt-sig-name { font-size:7.5pt; color:#444 !important; }
+    .rpt-sig-date { font-size:7pt; color:#888 !important; margin-top:2pt; }
+    .rpt-sig-label { font-size:6.5pt; color:#999 !important; margin-top:1pt; }
 
     .no-print { display:none !important; }
-    .print-only { display:block !important; }
-    .print-footer { position:fixed; bottom:0; left:0; right:0; font-size:7pt; color:#999 !important; text-align:center; padding:4pt; border-top:0.5pt solid #eee; }
   }
 
   /* default: hide print report */
@@ -472,7 +537,7 @@ function renderMTTR(selMachine){
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PDF REPORT GENERATOR
+   PDF REPORT GENERATOR  — one machine per page
 ══════════════════════════════════════════════════════════════ */
 function buildPDFReport(groupKey) {
   const grp   = PRINT_GROUPS[groupKey];
@@ -480,181 +545,183 @@ function buildPDFReport(groupKey) {
   const fromS = dateFrom ? fmtDate(dateFrom) : 'ทั้งหมด';
   const toS   = dateTo   ? fmtDate(dateTo)   : 'ทั้งหมด';
   const today = fmtDate(new Date());
+  const color = grp.color;
 
-  /* data for the group machines */
-  const gData  = rd.filter(r => grp.machines.includes(r.machine));
-  const gma    = calcGroupMA(rd, grp.machines, grp.failTypes);
+  const gma = calcGroupMA(rd, grp.machines, grp.failTypes);
   const { daily, summary } = calcMTTRMTBF(rd);
 
-  /* downtime summary per machine in group */
-  const machRows = grp.machines.map(m => {
-    const s = summary[m];
-    const totalDT = sumS(gData.filter(r=>r.machine===m));
-    const byType  = {};
-    TYPE_ORDER.forEach(t=>byType[t]=0);
-    gData.filter(r=>r.machine===m).forEach(r=>{ if(byType[r.type]!==undefined) byType[r.type]+=r.smu; });
-    return { m, totalDT, byType, s };
-  });
+  /* ── helpers ── */
+  function maClass(v) { return v>=95?'g':v>=80?'y':'r'; }
+  function mClass(v)  { return v<=2?'g':v<=6?'y':'r'; }
+  function bClass(v)  { return v>=18?'g':v>=10?'y':'r'; }
 
-  /* daily breakdown per machine */
-  const dailyRows = {}; /* machine → sorted days */
-  grp.machines.forEach(m => { dailyRows[m] = (daily[m]||[]).filter(r => r.events > 0 || r.allSMU > 0); });
-
-  /* top-5 events per machine */
-  const top5 = {};
-  grp.machines.forEach(m => {
-    top5[m] = gData.filter(r=>r.machine===m).sort((a,b)=>b.smu-a.smu).slice(0,5);
-  });
-
-  /* monthly trend */
-  const months = [...new Set(rd.map(r=>monthKey(r.date)).filter(k=>k!=='?'))].sort();
-  const monthlyDT = {};
-  grp.machines.forEach(m => {
-    monthlyDT[m] = {};
-    months.forEach(k => monthlyDT[m][k] = 0);
-  });
-  gData.forEach(r => { const k=monthKey(r.date); if(monthlyDT[r.machine]&&k!=='?') monthlyDT[r.machine][k]+=r.smu; });
-
-  /* ── Build HTML ─────────────────────────────────────────────── */
-  const typeFilterNote = `Failure Types ที่ใช้คำนวณ MTTR/MTBF: <strong>${grp.failTypes.join(', ')}</strong>`;
-
-  let html = `
-    <!-- HEADER -->
-    <div class="rpt-section">
-      <table style="width:100%;border:none;margin-bottom:10pt">
-        <tr>
-          <td style="border:none;padding:0;vertical-align:top">
-            <div style="font-size:16pt;font-weight:700;color:${grp.color}">${grp.label}</div>
-            <div style="font-size:9pt;color:#555;margin-top:2pt">Downtime Analysis Report</div>
-          </td>
-          <td style="border:none;padding:0;text-align:right;vertical-align:top;font-size:8pt;color:#666">
-            ช่วงวันที่: <strong>${fromS}</strong> — <strong>${toS}</strong><br>
-            พิมพ์วันที่: ${today}
-          </td>
-        </tr>
-      </table>
-      <div style="height:2pt;background:${grp.color};border-radius:1pt;margin-bottom:12pt"></div>
-    </div>
-
-    <!-- MA% SUMMARY -->
-    <div class="rpt-section">
-      <div class="rpt-section-title" style="color:${grp.color} !important;border-color:${grp.color} !important">Machine Availability Summary</div>
-      <div class="rpt-kpi-row">
-        <div class="rpt-kpi" style="border-color:${grp.color}">
-          <div class="rpt-kpi-label">MA% รวม (${grp.label})</div>
-          <div class="rpt-kpi-val" style="color:${avC(gma.ma)}">${gma.ma.toFixed(1)}<span style="font-size:10pt;font-weight:400">%</span></div>
-        </div>
-        <div class="rpt-kpi">
-          <div class="rpt-kpi-label">MTTR รวม</div>
-          <div class="rpt-kpi-val" style="color:${mttrC(gma.mttr)}">${gma.mttr.toFixed(2)}</div>
-          <div class="rpt-kpi-unit">ชม./ครั้ง</div>
-        </div>
-        <div class="rpt-kpi">
-          <div class="rpt-kpi-label">MTBF รวม</div>
-          <div class="rpt-kpi-val" style="color:${mtbfC(gma.mtbf)}">${gma.mtbf.toFixed(2)}</div>
-          <div class="rpt-kpi-unit">ชม./ครั้ง</div>
-        </div>
-        <div class="rpt-kpi">
-          <div class="rpt-kpi-label">จำนวนครั้ง Failure</div>
-          <div class="rpt-kpi-val">${gma.totalEvents}</div>
-          <div class="rpt-kpi-unit">ครั้ง</div>
-        </div>
-        <div class="rpt-kpi">
-          <div class="rpt-kpi-label">รวม Failure DT</div>
-          <div class="rpt-kpi-val">${gma.totalFailDT.toFixed(1)}</div>
-          <div class="rpt-kpi-unit">ชั่วโมง</div>
-        </div>
-        ${grp.machines.length > 1 ? grp.machines.map(m=>{
-          const s=summary[m]; if(!s||s.totalEvents===0) return'';
-          return`<div class="rpt-kpi">
-            <div class="rpt-kpi-label">MA% — ${m}</div>
-            <div class="rpt-kpi-val" style="color:${avC(s.ma)}">${s.ma.toFixed(1)}<span style="font-size:10pt;font-weight:400">%</span></div>
-            <div class="rpt-kpi-unit">MTTR: ${s.mttr.toFixed(2)} | MTBF: ${s.mtbf.toFixed(2)}</div>
-          </div>`;
-        }).join('') : ''}
+  /* ── Signature block (shared) ── */
+  const sigBlock = `
+    <div class="rpt-sig-spacer"></div>
+    <div class="rpt-sig-block">
+      <div class="rpt-sig-box">
+        <div class="rpt-sig-role">ผู้นำเสนอ / Prepared by</div>
+        <div class="rpt-sig-line"></div>
+        <div class="rpt-sig-name">ชื่อ: ............................................</div>
+        <div class="rpt-sig-date">ตำแหน่ง: ............................................</div>
+        <div class="rpt-sig-label">วันที่: ............................................</div>
       </div>
-      <div style="font-size:7pt;color:#666;margin-top:4pt">${typeFilterNote} &nbsp;|&nbsp; Base = 24 ชม./วัน &nbsp;|&nbsp; MA% = MTBF ÷ (MTBF + MTTR) × 100</div>
-    </div>
+      <div class="rpt-sig-box">
+        <div class="rpt-sig-role">ผู้รับรอง / Approved by</div>
+        <div class="rpt-sig-line"></div>
+        <div class="rpt-sig-name">ชื่อ: ............................................</div>
+        <div class="rpt-sig-date">ตำแหน่ง: ............................................</div>
+        <div class="rpt-sig-label">วันที่: ............................................</div>
+      </div>
+    </div>`;
 
-    <!-- DOWNTIME SUMMARY TABLE -->
-    <div class="rpt-section">
-      <div class="rpt-section-title" style="color:${grp.color} !important;border-color:${grp.color} !important">สรุป Downtime แยกตามประเภท (ชั่วโมง)</div>
-      <table>
-        <thead><tr>
-          <th>เครื่องจักร</th>
-          ${TYPE_ORDER.map(t=>`<th style="text-align:right">${t}</th>`).join('')}
-          <th style="text-align:right">รวม (ชม.)</th>
-        </tr></thead>
-        <tbody>
-          ${machRows.map(({m,totalDT,byType})=>`<tr>
-            <td style="font-weight:600">${m}</td>
-            ${TYPE_ORDER.map(t=>`<td style="text-align:right">${byType[t]>0?byType[t].toFixed(1):'—'}</td>`).join('')}
-            <td style="text-align:right;font-weight:600">${totalDT.toFixed(1)}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>
+  /* ── Build one page per machine ── */
+  const pages = grp.machines.map((m, mi) => {
+    const s      = summary[m] || { totalFailDT:0, totalUptime:0, totalEvents:0, totalDays:0, mttr:0, mtbf:HRS, ma:100 };
+    const mData  = rd.filter(r=>r.machine===m);
+    const totalDT = sumS(mData);
+    const byType = {}; TYPE_ORDER.forEach(t=>byType[t]=0);
+    mData.forEach(r=>{ if(byType[r.type]!==undefined) byType[r.type]+=r.smu; });
+    const dailyR = (daily[m]||[]).filter(r=>r.events>0||r.allSMU>0);
+    const top5m  = mData.sort((a,b)=>b.smu-a.smu).slice(0,5);
 
-    <!-- DAILY TABLE per machine -->
-    ${grp.machines.map(m => {
-      const rows = dailyRows[m];
-      if (!rows || rows.length === 0) return `<div class="rpt-section"><div class="rpt-section-title" style="color:${grp.color} !important;border-color:${grp.color} !important">${m} — ตารางรายวัน</div><p style="font-size:9pt;color:#999">ไม่มีข้อมูล Downtime</p></div>`;
-      return `<div class="rpt-section">
-        <div class="rpt-section-title" style="color:${grp.color} !important;border-color:${grp.color} !important">${m} — MTTR · MTBF · MA% รายวัน</div>
-        <table>
+    /* combined MA for the group (shown on each page of multi-machine groups) */
+    const showGroupMA = grp.machines.length > 1;
+
+    return `
+    <!-- PAGE: ${m} -->
+    <div class="rpt-machine-page" style="--rpt-color:${color}">
+
+      <!-- PAGE HEADER -->
+      <div class="rpt-page-header">
+        <div>
+          <div class="rpt-page-header-title" style="color:${color}">${grp.label}</div>
+          <div class="rpt-page-header-sub">${m} &nbsp;·&nbsp; Downtime Analysis Report</div>
+        </div>
+        <div class="rpt-page-header-meta">
+          ช่วงวันที่: <strong>${fromS}</strong> — <strong>${toS}</strong><br>
+          Failure Types: <strong>${grp.failTypes.join(', ')}</strong><br>
+          พิมพ์: ${today}
+        </div>
+      </div>
+
+      <!-- MA% KPI BAR -->
+      <div class="rpt-kpi-bar">
+        <div class="rpt-kpi-box rpt-kpi-ma" style="border-left-color:${color} !important">
+          <div class="rpt-kpi-box-label">MA% — ${m}</div>
+          <div class="rpt-kpi-box-val ${maClass(s.ma)}" style="font-size:18pt">${s.ma.toFixed(1)}<span style="font-size:9pt;font-weight:400">%</span></div>
+        </div>
+        ${showGroupMA ? `<div class="rpt-kpi-box rpt-kpi-ma" style="border-left-color:#888 !important">
+          <div class="rpt-kpi-box-label">MA% รวม ${grp.label}</div>
+          <div class="rpt-kpi-box-val ${maClass(gma.ma)}" style="font-size:18pt">${gma.ma.toFixed(1)}<span style="font-size:9pt;font-weight:400">%</span></div>
+        </div>` : ''}
+        <div class="rpt-kpi-box">
+          <div class="rpt-kpi-box-label">MTTR</div>
+          <div class="rpt-kpi-box-val ${mClass(s.mttr)}">${s.mttr.toFixed(2)}</div>
+          <div class="rpt-kpi-box-unit">ชม./ครั้ง</div>
+        </div>
+        <div class="rpt-kpi-box">
+          <div class="rpt-kpi-box-label">MTBF</div>
+          <div class="rpt-kpi-box-val ${bClass(s.mtbf)}">${s.mtbf.toFixed(2)}</div>
+          <div class="rpt-kpi-box-unit">ชม./ครั้ง</div>
+        </div>
+        <div class="rpt-kpi-box">
+          <div class="rpt-kpi-box-label">จำนวนครั้ง Failure</div>
+          <div class="rpt-kpi-box-val">${s.totalEvents}</div>
+          <div class="rpt-kpi-box-unit">ครั้ง</div>
+        </div>
+        <div class="rpt-kpi-box">
+          <div class="rpt-kpi-box-label">รวม Failure DT</div>
+          <div class="rpt-kpi-box-val">${s.totalFailDT.toFixed(1)}</div>
+          <div class="rpt-kpi-box-unit">ชั่วโมง</div>
+        </div>
+        <div class="rpt-kpi-box">
+          <div class="rpt-kpi-box-label">รวม Downtime ทั้งหมด</div>
+          <div class="rpt-kpi-box-val">${totalDT.toFixed(1)}</div>
+          <div class="rpt-kpi-box-unit">ชั่วโมง</div>
+        </div>
+      </div>
+
+      <!-- DOWNTIME BY TYPE -->
+      <div class="rpt-sec-title accent">Downtime แยกตามประเภท (ชั่วโมง)</div>
+      <div class="rpt-table-wrap">
+        <table class="rpt-table">
           <thead><tr>
-            <th>วันที่</th>
-            <th style="text-align:right">ครั้ง Failure</th>
-            <th style="text-align:right">Failure DT (ชม.)</th>
-            <th style="text-align:right">Uptime (ชม.)</th>
-            <th style="text-align:right">MTTR (ชม./ครั้ง)</th>
-            <th style="text-align:right">MTBF (ชม./ครั้ง)</th>
-            <th style="text-align:right">MA%</th>
+            <th>เครื่องจักร</th>
+            ${TYPE_ORDER.map(t=>`<th class="num">${t}</th>`).join('')}
+            <th class="num">รวม (ชม.)</th>
           </tr></thead>
           <tbody>
-            ${rows.map(r=>`<tr>
-              <td style="white-space:nowrap">${fmtDate(r.date)}</td>
-              <td style="text-align:right">${r.events}</td>
-              <td style="text-align:right">${r.failSMU.toFixed(2)}</td>
-              <td style="text-align:right">${r.uptime.toFixed(2)}</td>
-              <td style="text-align:right;font-weight:600">${r.events>0?r.mttr.toFixed(2):'—'}</td>
-              <td style="text-align:right;font-weight:600">${r.events>0?r.mtbf.toFixed(2):'—'}</td>
-              <td style="text-align:right;font-weight:600">${r.events>0?r.ma.toFixed(1)+'%':'—'}</td>
-            </tr>`).join('')}
+            <tr>
+              <td class="bold">${m}</td>
+              ${TYPE_ORDER.map(t=>`<td class="num">${byType[t]>0?byType[t].toFixed(1):'—'}</td>`).join('')}
+              <td class="num bold">${totalDT.toFixed(1)}</td>
+            </tr>
           </tbody>
         </table>
-      </div>`;
-    }).join('')}
+      </div>
 
-    <!-- TOP-5 EVENTS -->
-    <div class="rpt-section">
-      <div class="rpt-section-title" style="color:${grp.color} !important;border-color:${grp.color} !important">5 อันดับ Downtime สูงสุด แยกตามเครื่อง</div>
-      ${grp.machines.map(m => {
-        const items = top5[m];
-        if (!items || !items.length) return `<p style="font-size:9pt;color:#999;margin-bottom:8pt">ไม่มีข้อมูล — ${m}</p>`;
-        return `<div style="margin-bottom:10pt">
-          <div class="rpt-sub-title">${m}</div>
-          <table>
-            <thead><tr><th>#</th><th>รายละเอียด</th><th>วันที่</th><th>ประเภท</th><th style="text-align:right">ชั่วโมง</th></tr></thead>
+      <!-- DAILY MTTR/MTBF/MA TABLE -->
+      <div class="rpt-sec-title accent">MTTR · MTBF · MA% รายวัน</div>
+      <div class="rpt-table-wrap">
+        ${dailyR.length === 0
+          ? `<p style="font-size:8pt;color:#999;padding:4pt 0">ไม่มีข้อมูล Failure ในช่วงที่เลือก</p>`
+          : `<table class="rpt-table">
+            <thead><tr>
+              <th>วันที่</th>
+              <th class="num">ครั้ง Failure</th>
+              <th class="num">Failure DT (ชม.)</th>
+              <th class="num">Uptime (ชม.)</th>
+              <th class="num">MTTR (ชม./ครั้ง)</th>
+              <th class="num">MTBF (ชม./ครั้ง)</th>
+              <th class="num">MA%</th>
+            </tr></thead>
             <tbody>
-              ${items.map((r,i)=>`<tr>
-                <td style="font-weight:700;color:${grp.color}">${i+1}</td>
-                <td>${r.detail||'—'}</td>
+              ${dailyR.map(r=>`<tr>
                 <td style="white-space:nowrap">${fmtDate(r.date)}</td>
-                <td>${r.type}${r.mergedCount>1?` (รวม ${r.mergedCount} กะ)`:''}</td>
-                <td style="text-align:right;font-weight:600">${r.smu.toFixed(1)}</td>
+                <td class="num">${r.events}</td>
+                <td class="num">${r.failSMU.toFixed(2)}</td>
+                <td class="num">${r.uptime.toFixed(2)}</td>
+                <td class="num bold ${r.events>0?mClass(r.mttr):''}">${r.events>0?r.mttr.toFixed(2):'—'}</td>
+                <td class="num bold ${r.events>0?bClass(r.mtbf):''}">${r.events>0?r.mtbf.toFixed(2):'—'}</td>
+                <td class="num bold ${r.events>0?maClass(r.ma):''}">${r.events>0?r.ma.toFixed(1)+'%':'—'}</td>
               </tr>`).join('')}
             </tbody>
-          </table>
-        </div>`;
-      }).join('')}
-    </div>
+          </table>`}
+      </div>
 
-    <!-- FOOTER -->
-    <div class="print-footer">Machine Downtime Dashboard &nbsp;|&nbsp; ช่วง: ${fromS} — ${toS} &nbsp;|&nbsp; พิมพ์: ${today}</div>
-  `;
+      <!-- TOP-5 DOWNTIME EVENTS -->
+      <div class="rpt-sec-title accent">5 อันดับ Downtime สูงสุด</div>
+      <div class="rpt-table-wrap">
+        ${top5m.length === 0
+          ? `<p style="font-size:8pt;color:#999;padding:4pt 0">ไม่มีข้อมูล</p>`
+          : `<table class="rpt-table">
+            <thead><tr>
+              <th style="width:18pt">#</th>
+              <th>รายละเอียด</th>
+              <th style="width:52pt">วันที่</th>
+              <th style="width:30pt">ประเภท</th>
+              <th class="num" style="width:36pt">ชั่วโมง</th>
+            </tr></thead>
+            <tbody>
+              ${top5m.map((r,i)=>`<tr>
+                <td class="bold" style="color:${color}">${i+1}</td>
+                <td style="font-size:7pt">${r.detail||'—'}${r.mergedCount>1?` <span style="color:#534ab7;font-size:6.5pt">(รวม ${r.mergedCount} กะ)</span>`:''}</td>
+                <td style="white-space:nowrap;font-size:7pt">${fmtDate(r.date)}</td>
+                <td style="font-size:7pt">${r.type}</td>
+                <td class="num bold">${r.smu.toFixed(1)}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`}
+      </div>
 
-  return html;
+      <!-- SIGNATURE BLOCK -->
+      ${sigBlock}
+
+    </div>`;
+  });
+
+  return pages.join('\n');
 }
 
 /* ── Print trigger ──────────────────────────────────────────── */
