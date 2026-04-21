@@ -249,9 +249,11 @@
 /* ──────────────────────────────────────────────────────────────
    CONFIG
 ────────────────────────────────────────────────────────────── */
-const SHEET_ID = '1ygTva5iEXjhi-LKMIJAF5909xux1wmSVKCWuZbFDrZA';
-const GID      = '103270503';
-const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
+const SHEET_ID   = '1ygTva5iEXjhi-LKMIJAF5909xux1wmSVKCWuZbFDrZA';
+const GID_2026   = '103270503';   /* Sheet: Downtime (ปี 2026) */
+const GID_2025   = '152214943';   /* Sheet: Downtime 2025       */
+const CSV_2026   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID_2026}`;
+const CSV_2025   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID_2025}`;
 const HRS = 24;
 
 /* ── FAILURE TYPE RULES ─────────────────────────────────────── */
@@ -792,13 +794,22 @@ function buildShell() {
 /* ══════════════════════════════════════════════════════════════
    LOAD DATA
 ══════════════════════════════════════════════════════════════ */
+async function fetchCSV(url) {
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} — ${url}`);
+  const text = await resp.text();
+  return Papa.parse(text, { header:true, skipEmptyLines:true }).data;
+}
+
 async function init() {
   try {
-    const resp = await fetch(CSV_URL);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const text = await resp.text();
-    const result = Papa.parse(text, { header:true, skipEmptyLines:true });
-    allMerged = mergeConsec(result.data.map(parseR).filter(Boolean));
+    /* ดึงทั้ง 2 Sheet พร้อมกัน แล้วรวม rows */
+    const [rows2026, rows2025] = await Promise.all([
+      fetchCSV(CSV_2026),
+      fetchCSV(CSV_2025),
+    ]);
+    const allRows = [...rows2026, ...rows2025];
+    allMerged = mergeConsec(allRows.map(parseR).filter(Boolean));
     buildShell();
   } catch(e) {
     document.getElementById('app').innerHTML=`
