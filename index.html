@@ -117,6 +117,7 @@
   .dt-type-btn:hover { opacity:.85; }
   .dt-type-btn.active { color:#fff; border-color:transparent; }
   .dt-count { font-size:11px; color:var(--text-secondary); white-space:nowrap; padding-left:4px; }
+  .dt-sort-th:hover { color:var(--text-primary) !important; background:var(--bg-secondary); }
   .dt-detail-col { max-width:320px; white-space:normal; line-height:1.4; font-size:11.5px; }
 
   /* ── MTBF/MTTR section ────────────────────────────────────── */
@@ -426,105 +427,132 @@ function calcGroupMA(data, machines, failTypes) {
 /* ══════════════════════════════════════════════════════════════
    DETAIL TABLE STATE & RENDER
 ══════════════════════════════════════════════════════════════ */
-let dtMachine = 'all';  /* selected machine filter */
-let dtTypes   = new Set(['Plan','ME','EE','OPT','Uncontrol']); /* active type filters */
+let dtMachine = 'all';
+let dtTypes   = new Set(['Plan','ME','EE','OPT','Uncontrol']);
+let dtSortDir = 'desc'; /* 'desc' = มากสุดก่อน, 'asc' = น้อยสุดก่อน */
 const DT_TYPES = ['Plan','ME','EE','OPT','Uncontrol'];
 
 function renderDetailTable(fd) {
   /* apply machine + type filters */
-  let rows = fd.filter(r =>
-    (dtMachine === 'all' || r.machine === dtMachine) &&
-    dtTypes.has(r.type)
-  );
-  /* sort: newest first, then by smu desc */
-  rows = [...rows].sort((a,b)=> {
-    const dd = (b.date||new Date(0)) - (a.date||new Date(0));
-    return dd !== 0 ? dd : b.smu - a.smu;
+  let rows = fd.filter(function(r) {
+    return (dtMachine === 'all' || r.machine === dtMachine) && dtTypes.has(r.type);
+  });
+  rows = rows.slice().sort(function(a,b) {
+    if (dtSortDir === 'desc') return b.smu - a.smu;
+    return a.smu - b.smu;
   });
 
   const totalSMU = sumS(rows);
 
   /* machine buttons */
-  const machBtns = ['all', ...MACHINES].map((m,i) => {
+  let machBtns = '';
+  const mbList = ['all'].concat(MACHINES);
+  for (let i = 0; i < mbList.length; i++) {
+    const m      = mbList[i];
     const isAll  = m === 'all';
     const color  = isAll ? '#185fa5' : MC[i-1];
     const active = m === dtMachine;
     const lbl    = isAll ? 'ทั้งหมด' : MSHORT[i-1];
-    const cnt    = isAll ? fd.filter(r=>dtTypes.has(r.type)).length
-                         : fd.filter(r=>r.machine===m&&dtTypes.has(r.type)).length;
-    return `<button class="dt-mach-btn${active?' active':''}"
-      style="${active?`background:${color};`:'color:var(--text-secondary)'}"
-      onclick="dtSetMachine('${m}')">
-      ${isAll?'':'<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:'+(active?'rgba(255,255,255,.7)':color)+';margin-right:5px;vertical-align:middle"></span>'}${lbl} <span style="opacity:.65;font-size:10px">${cnt}</span>
-    </button>`;
-  }).join('');
+    const cnt    = isAll
+      ? fd.filter(function(r){ return dtTypes.has(r.type); }).length
+      : fd.filter(function(r){ return r.machine===m && dtTypes.has(r.type); }).length;
+    const dotHTML = isAll ? '' :
+      '<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:'
+      + (active ? 'rgba(255,255,255,.7)' : color)
+      + ';margin-right:5px;vertical-align:middle"></span>';
+    const styleStr = active
+      ? 'background:' + color + ';color:#fff;border-color:transparent'
+      : 'color:var(--text-secondary)';
+    machBtns += '<button class="dt-mach-btn" style="' + styleStr + '" onclick="dtSetMachine(\'' + m + '\')">'
+      + dotHTML + lbl
+      + ' <span style="opacity:.65;font-size:10px">' + cnt + '</span></button>';
+  }
 
   /* type toggle buttons */
-  const typeBtns = DT_TYPES.map(t => {
+  let typeBtns = '';
+  for (let i = 0; i < DT_TYPES.length; i++) {
+    const t  = DT_TYPES[i];
     const on = dtTypes.has(t);
-    return `<button class="dt-type-btn${on?' active':''}"
-      style="${on?`background:${TC[t]||'#888'};`:'border-color:'+(TC[t]||'#888')+';color:'+(TC[t]||'#888')}"
-      onclick="dtToggleType('${t}')">
-      ${t}
-    </button>`;
-  }).join('');
+    const c  = TC[t] || '#888';
+    const styleStr = on
+      ? 'background:' + c + ';color:#fff;border-color:transparent'
+      : 'border-color:' + c + ';color:' + c;
+    typeBtns += '<button class="dt-type-btn" style="' + styleStr + '" onclick="dtToggleType(\'' + t + '\')">' + t + '</button>';
+  }
 
-  const tableBody = rows.length === 0
-    ? `<tr><td colspan="5" class="no-data">ไม่มีข้อมูลที่ตรงกับตัวกรอง</td></tr>`
-    : rows.map(r => {
-        const color = MC[MACHINES.indexOf(r.machine)] || '#888';
-        return `<tr>
-          <td style="white-space:nowrap;font-size:11px">${fmtDate(r.date)}</td>
-          <td>
-            <span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${color};margin-right:6px;vertical-align:middle"></span>
-            <span style="font-weight:500;font-size:12px">${r.machine}</span>
-          </td>
-          <td>
-            <span class="pill" style="background:${(TC[r.type]||'#888')}22;color:${TC[r.type]||'#888'}">${r.type}</span>
-          </td>
-          <td class="dt-detail-col">${r.detail||'—'}${r.mergedCount>1?` <span class="merged-badge">รวม ${r.mergedCount} กะ</span>`:''}</td>
-          <td class="num-right" style="font-weight:500;color:${color};font-size:12px">${r.smu.toFixed(1)} <span style="font-size:10px;opacity:.6">ชม.</span></td>
-        </tr>`;
-      }).join('');
+  /* table rows */
+  let tableBody = '';
+  if (rows.length === 0) {
+    tableBody = '<tr><td colspan="5" class="no-data">ไม่มีข้อมูลที่ตรงกับตัวกรอง</td></tr>';
+  } else {
+    for (let i = 0; i < rows.length; i++) {
+      const r     = rows[i];
+      const color = MC[MACHINES.indexOf(r.machine)] || '#888';
+      const badge = r.mergedCount > 1
+        ? ' <span class="merged-badge">รวม ' + r.mergedCount + ' กะ</span>'
+        : '';
+      tableBody +=
+        '<tr>' +
+        '<td style="white-space:nowrap;font-size:11px">' + fmtDate(r.date) + '</td>' +
+        '<td><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:' + color + ';margin-right:6px;vertical-align:middle"></span>' +
+        '<span style="font-weight:500;font-size:12px">' + r.machine + '</span></td>' +
+        '<td><span class="pill" style="background:' + (TC[r.type]||'#888') + '22;color:' + (TC[r.type]||'#888') + '">' + r.type + '</span></td>' +
+        '<td class="dt-detail-col">' + (r.detail||'—') + badge + '</td>' +
+        '<td class="num-right" style="font-weight:500;color:' + color + ';font-size:12px">' + r.smu.toFixed(1) + ' <span style="font-size:10px;opacity:.6">ชม.</span></td>' +
+        '</tr>';
+    }
+  }
 
-  document.getElementById('dt-panel').innerHTML = `
-    <div class="panel-hdr">
-      <span class="panel-title">รายละเอียด Downtime</span>
-      <span class="dt-count">${rows.length} รายการ · รวม ${totalSMU.toFixed(1)} ชม.</span>
-    </div>
-    <div class="dt-controls">
-      <div class="dt-machine-btns">${machBtns}</div>
-      <div class="dt-type-btns">${typeBtns}</div>
-    </div>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr>
-          <th>วันที่</th>
-          <th>เครื่องจักร</th>
-          <th>ประเภท</th>
-          <th>รายละเอียด</th>
-          <th class="num-right">ชั่วโมง</th>
-        </tr></thead>
-        <tbody>${tableBody}</tbody>
-      </table>
-    </div>
-  `;
+  const panel = document.getElementById('dt-panel');
+  if (!panel) return;
+  panel.innerHTML =
+    '<div class="panel-hdr">' +
+      '<span class="panel-title">รายละเอียด Downtime</span>' +
+      '<span class="dt-count">' + rows.length + ' รายการ · รวม ' + totalSMU.toFixed(1) + ' ชม.</span>' +
+    '</div>' +
+    '<div class="dt-controls">' +
+      '<div class="dt-machine-btns">' + machBtns + '</div>' +
+      '<div class="dt-type-btns">' + typeBtns + '</div>' +
+    '</div>' +
+    '<div class="tbl-wrap">' +
+      '<table>' +
+        '<thead><tr>' +
+          '<th>วันที่</th>' +
+          '<th>เครื่องจักร</th>' +
+          '<th>ประเภท</th>' +
+          '<th>รายละเอียด</th>' +
+          '<th class="num-right dt-sort-th" onclick="dtToggleSort()" style="cursor:pointer;user-select:none;white-space:nowrap">' +
+            'ชั่วโมง ' + (dtSortDir === 'desc' ? '&#9660;' : '&#9650;') +
+          '</th>' +
+        '</tr></thead>' +
+        '<tbody>' + tableBody + '</tbody>' +
+      '</table>' +
+    '</div>';
 }
 
 function dtSetMachine(m) {
   dtMachine = m;
-  const fd = filterD(allMerged, document.getElementById('sel-mo')?.value||'all', 'all');
-  renderDetailTable(fd);
+  const mo = document.getElementById('sel-mo') ? document.getElementById('sel-mo').value : 'all';
+  const ty = document.getElementById('sel-ty') ? document.getElementById('sel-ty').value : 'all';
+  renderDetailTable(filterD(allMerged, mo, ty));
 }
 
 function dtToggleType(t) {
   if (dtTypes.has(t)) {
-    if (dtTypes.size > 1) dtTypes.delete(t); /* keep at least 1 */
+    if (dtTypes.size > 1) dtTypes.delete(t);
   } else {
     dtTypes.add(t);
   }
-  const fd = filterD(allMerged, document.getElementById('sel-mo')?.value||'all', 'all');
-  renderDetailTable(fd);
+  const mo = document.getElementById('sel-mo') ? document.getElementById('sel-mo').value : 'all';
+  const ty = document.getElementById('sel-ty') ? document.getElementById('sel-ty').value : 'all';
+  renderDetailTable(filterD(allMerged, mo, ty));
+}
+
+function dtToggleSort() {
+  dtSortDir = dtSortDir === 'desc' ? 'asc' : 'desc';
+  const mo = document.getElementById('sel-mo') ? document.getElementById('sel-mo').value : 'all';
+  const ty = document.getElementById('sel-ty') ? document.getElementById('sel-ty').value : 'all';
+  renderDetailTable(filterD(allMerged, mo, ty));
 }
 
 /* ══════════════════════════════════════════════════════════════
