@@ -130,6 +130,35 @@
   .ma-card-sub { font-size:10px; color:var(--text-secondary); margin-top:2px; }
 
   /* ── States ───────────────────────────────────────────────── */
+  /* ── Loading Overlay ─────────────────────────────────────── */
+  .load-overlay {
+    position:fixed; inset:0; z-index:9999;
+    background:var(--bg-tertiary);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:20px;
+  }
+  .load-overlay.hidden { display:none; }
+  .load-logo {
+    width:48px; height:48px; border-radius:14px;
+    background:#185fa5;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 24px rgba(24,95,165,.35);
+  }
+  .load-logo svg { width:24px; height:24px; stroke:#fff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .load-title { font-size:16px; font-weight:500; color:var(--text-primary); }
+  .load-sub   { font-size:12px; color:var(--text-secondary); margin-top:-12px; }
+  .load-bar-wrap {
+    width:240px; height:5px;
+    background:var(--border);
+    border-radius:5px; overflow:hidden;
+  }
+  .load-bar {
+    height:5px; border-radius:5px;
+    background: linear-gradient(90deg, #185fa5, #4a90d9);
+    width:0%;
+    transition:width .4s ease;
+  }
+  .load-step { font-size:11px; color:var(--text-secondary); min-height:16px; text-align:center; }
   .load-msg { text-align:center; padding:4rem; color:var(--text-secondary); font-size:14px; }
   .err { background:#fcebeb; color:#a32d2d; border-radius:var(--radius-lg); padding:1rem 1.25rem; font-size:13px; margin:1rem 0; border:0.5px solid #f09595; }
   @media(prefers-color-scheme:dark){ .err { background:#2e1515; color:#f09595; border-color:#791f1f; } }
@@ -245,6 +274,18 @@
 </style>
 </head>
 <body>
+<!-- Loading Overlay -->
+<div class="load-overlay" id="load-overlay">
+  <div class="load-logo">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+  </div>
+  <div class="load-title">Machine Downtime Dashboard</div>
+  <div class="load-sub" id="load-step">กำลังเชื่อมต่อ Google Sheets...</div>
+  <div class="load-bar-wrap">
+    <div class="load-bar" id="load-bar"></div>
+  </div>
+</div>
+
 <div class="db" id="app-root">
   <div id="app"><div class="load-msg">กำลังโหลดข้อมูล...</div></div>
   <!-- print report injected here by JS -->
@@ -841,6 +882,34 @@ function printReport(groupKey) {
 /* ══════════════════════════════════════════════════════════════
    DATE / FILTER HELPERS
 ══════════════════════════════════════════════════════════════ */
+function refreshData() {
+  /* Clear cache for both sheets then reload */
+  try {
+    localStorage.removeItem('dt_cache_' + CSV_2026);
+    localStorage.removeItem('dt_cache_' + CSV_2025);
+  } catch(e) {}
+  const ov = document.getElementById('load-overlay');
+  if (ov) {
+    ov.style.opacity = '1';
+    ov.style.transition = '';
+    ov.classList.remove('hidden');
+  }
+  loadSetProgress(0, 'กำลังเชื่อมต่อ Google Sheets...');
+  init();
+}
+
+function updateCacheStatus() {
+  const el = document.getElementById('cache-status');
+  if (!el) return;
+  const c26 = cacheGet(CSV_2026);
+  const c25 = cacheGet(CSV_2025);
+  if (c26 && c25) {
+    el.textContent = 'ข้อมูล Cache พร้อมใช้งาน (จะรีเฟรชอัตโนมัติในอีก 5 นาที)';
+  } else {
+    el.textContent = '';
+  }
+}
+
 function applyDateRange() {
   const f=document.getElementById('date-from').value, t=document.getElementById('date-to').value;
   dateFrom=f?new Date(f):null; dateTo=t?new Date(t):null;
@@ -902,6 +971,15 @@ function buildShell() {
       <button class="print-btn sys" onclick="printReport('sys')">${SVG_PRINT} System</button>
     </div>
 
+    <!-- Refresh button -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem">
+      <button onclick="refreshData()" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:0.5px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);transition:all .15s;font-family:inherit" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-secondary)'">
+        <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        รีเฟรชข้อมูล
+      </button>
+      <span id="cache-status" style="font-size:10px;color:var(--text-secondary)"></span>
+    </div>
+
     <!-- tabs -->
     <div class="tab-row">
       <button class="tab-btn active" id="tab-ov">ภาพรวม Downtime</button>
@@ -918,11 +996,28 @@ function buildShell() {
   document.getElementById('tab-mt').addEventListener('click', ()=>switchTab('mttr'));
 
   renderOverview('all','all');
+  updateCacheStatus();
 }
 
 /* ══════════════════════════════════════════════════════════════
    LOAD DATA
 ══════════════════════════════════════════════════════════════ */
+/* ── Loading progress helpers ─────────────────────────────── */
+function loadSetProgress(pct, msg) {
+  const bar  = document.getElementById('load-bar');
+  const step = document.getElementById('load-step');
+  if (bar)  bar.style.width  = pct + '%';
+  if (step && msg) step.textContent = msg;
+}
+function loadDone() {
+  const ov = document.getElementById('load-overlay');
+  if (ov) {
+    ov.style.opacity = '0';
+    ov.style.transition = 'opacity .4s ease';
+    setTimeout(() => ov.classList.add('hidden'), 420);
+  }
+}
+
 async function fetchCSV(url) {
   const resp = await fetch(url, { cache: 'no-store' });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -936,17 +1031,58 @@ async function fetchCSV(url) {
   }).data;
 }
 
-async function init() {
+/* ── localStorage cache helpers ──────────────────────────────
+   Cache key = URL, stores { ts, data }.
+   TTL = 5 minutes — fresh enough for operational data,
+   fast enough that reload feels instant.
+──────────────────────────────────────────────────────────── */
+const CACHE_TTL_MS = 5 * 60 * 1000; /* 5 minutes */
+
+function cacheGet(url) {
   try {
-    /* ดึงทั้ง 2 Sheet พร้อมกัน แล้วรวม rows */
-    const [rows2026, rows2025] = await Promise.all([
-      fetchCSV(CSV_2026),
-      fetchCSV(CSV_2025),
-    ]);
+    const raw = localStorage.getItem('dt_cache_' + url);
+    if (!raw) return null;
+    const item = JSON.parse(raw);
+    if (Date.now() - item.ts > CACHE_TTL_MS) { localStorage.removeItem('dt_cache_' + url); return null; }
+    return item.data;
+  } catch(e) { return null; }
+}
+
+function cacheSet(url, data) {
+  try { localStorage.setItem('dt_cache_' + url, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+}
+
+async function fetchWithCache(url, label, pctStart, pctEnd) {
+  const cached = cacheGet(url);
+  if (cached) {
+    loadSetProgress(pctEnd, label + ' (จาก cache) ✓');
+    return cached;
+  }
+  loadSetProgress(pctStart, 'กำลังโหลด ' + label + '...');
+  const data = await fetchCSV(url);
+  loadSetProgress(pctEnd, label + ' ✓');
+  cacheSet(url, data);
+  return data;
+}
+
+async function init() {
+  loadSetProgress(5, 'กำลังเชื่อมต่อ Google Sheets...');
+  try {
+    /* Fetch both sheets — use cache when available */
+    const rows2026 = await fetchWithCache(CSV_2026, 'Downtime 2026', 5, 45);
+    const rows2025 = await fetchWithCache(CSV_2025, 'Downtime 2025', 45, 80);
+
+    loadSetProgress(85, 'กำลังประมวลผลข้อมูล...');
     const allRows = [...rows2026, ...rows2025];
     allMerged = mergeConsec(allRows.map(parseR).filter(Boolean));
+
+    loadSetProgress(95, 'กำลังสร้าง Dashboard...');
     buildShell();
+
+    loadSetProgress(100, 'เสร็จสิ้น ✓');
+    setTimeout(loadDone, 300);
   } catch(e) {
+    loadDone();
     document.getElementById('app').innerHTML=`
       <div class="topbar"><div class="topbar-left"><div class="topbar-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div><div><div class="topbar-title">Machine Downtime Dashboard</div></div></div></div>
       <div class="err"><strong>ไม่สามารถดึงข้อมูลได้:</strong> ${e.message}<br><br>กรุณาตรวจสอบว่า Google Sheet ถูกตั้งค่า <strong>"Anyone with the link can view"</strong></div>`;
