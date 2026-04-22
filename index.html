@@ -431,12 +431,17 @@ let dtMachine = 'all';
 let dtTypes   = new Set(['Plan','ME','EE','OPT','Uncontrol']);
 let dtSortCol = 'smu';   /* 'smu' | 'date' */
 let dtSortDir = 'desc';  /* 'desc' | 'asc' */
+let dtDetailSearch = ''; /* text search for detail column */
 const DT_TYPES = ['Plan','ME','EE','OPT','Uncontrol'];
 
 function renderDetailTable(fd) {
   /* apply machine + type filters */
   let rows = fd.filter(function(r) {
-    return (dtMachine === 'all' || r.machine === dtMachine) && dtTypes.has(r.type);
+    const matchMachine = dtMachine === 'all' || r.machine === dtMachine;
+    const matchType = dtTypes.has(r.type);
+    const matchSearch = dtDetailSearch === '' ||
+      (r.detail || '').toLowerCase().includes(dtDetailSearch.toLowerCase());
+    return matchMachine && matchType && matchSearch;
   });
   rows = rows.slice().sort(function(a,b) {
     let diff = 0;
@@ -520,6 +525,15 @@ function renderDetailTable(fd) {
       '<div class="dt-machine-btns">' + machBtns + '</div>' +
       '<div class="dt-type-btns">' + typeBtns + '</div>' +
     '</div>' +
+    '<div style="margin-bottom:10px">' +
+      '<div class="filter-chip" style="border-radius:8px;padding:5px 10px;gap:6px;background:var(--bg-secondary);border:0.5px solid var(--border);display:inline-flex;align-items:center;width:100%;max-width:400px">' +
+        '<svg style="width:12px;height:12px;stroke:var(--text-secondary);fill:none;stroke-width:2;flex-shrink:0" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+        '<input type="text" id="dt-search-input" placeholder="ค้นหารายละเอียด..." value="' + dtDetailSearch.replace(/"/g,'&quot;') + '" ' +
+          'oninput="dtSetSearch(this.value)" ' +
+          'style="border:none;background:transparent;font-size:12px;color:var(--text-primary);outline:none;width:100%;font-family:inherit;padding:0" />' +
+        (dtDetailSearch ? '<button onclick="dtSetSearch(\'\')" style="border:none;background:none;cursor:pointer;padding:0;display:flex;align-items:center;color:var(--text-secondary);flex-shrink:0" title="ล้างการค้นหา"><svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' : '') +
+      '</div>' +
+    '</div>' +
     '<div class="tbl-wrap">' +
       '<table>' +
         '<thead><tr>' +
@@ -566,6 +580,16 @@ function dtToggleSort(col) {
   const mo = document.getElementById('sel-mo') ? document.getElementById('sel-mo').value : 'all';
   const ty = document.getElementById('sel-ty') ? document.getElementById('sel-ty').value : 'all';
   renderDetailTable(filterD(allMerged, mo, ty));
+}
+
+function dtSetSearch(val) {
+  dtDetailSearch = val;
+  const mo = document.getElementById('sel-mo') ? document.getElementById('sel-mo').value : 'all';
+  const ty = document.getElementById('sel-ty') ? document.getElementById('sel-ty').value : 'all';
+  renderDetailTable(filterD(allMerged, mo, ty));
+  /* restore focus & cursor position */
+  const inp = document.getElementById('dt-search-input');
+  if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
 }
 
 /* ══════════════════════════════════════════════════════════════
