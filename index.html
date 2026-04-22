@@ -258,8 +258,8 @@
 const SHEET_ID   = '1ygTva5iEXjhi-LKMIJAF5909xux1wmSVKCWuZbFDrZA';
 const GID_2026   = '103270503';   /* Sheet: Downtime (ปี 2026) */
 const GID_2025   = '152214943';   /* Sheet: Downtime 2025       */
-const CSV_2026   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID_2026}`;
-const CSV_2025   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID_2025}`;
+const CSV_2026   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_2026}`;
+const CSV_2025   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_2025}`;
 const HRS = 24;
 
 /* ── FAILURE TYPE RULES ─────────────────────────────────────── */
@@ -429,7 +429,8 @@ function calcGroupMA(data, machines, failTypes) {
 ══════════════════════════════════════════════════════════════ */
 let dtMachine = 'all';
 let dtTypes   = new Set(['Plan','ME','EE','OPT','Uncontrol']);
-let dtSortDir = 'desc'; /* 'desc' = มากสุดก่อน, 'asc' = น้อยสุดก่อน */
+let dtSortCol = 'smu';   /* 'smu' | 'date' */
+let dtSortDir = 'desc';  /* 'desc' | 'asc' */
 const DT_TYPES = ['Plan','ME','EE','OPT','Uncontrol'];
 
 function renderDetailTable(fd) {
@@ -438,8 +439,13 @@ function renderDetailTable(fd) {
     return (dtMachine === 'all' || r.machine === dtMachine) && dtTypes.has(r.type);
   });
   rows = rows.slice().sort(function(a,b) {
-    if (dtSortDir === 'desc') return b.smu - a.smu;
-    return a.smu - b.smu;
+    let diff = 0;
+    if (dtSortCol === 'smu') {
+      diff = b.smu - a.smu;
+    } else {
+      diff = (b.date||new Date(0)) - (a.date||new Date(0));
+    }
+    return dtSortDir === 'desc' ? diff : -diff;
   });
 
   const totalSMU = sumS(rows);
@@ -517,12 +523,14 @@ function renderDetailTable(fd) {
     '<div class="tbl-wrap">' +
       '<table>' +
         '<thead><tr>' +
-          '<th>วันที่</th>' +
+          '<th class="dt-sort-th" onclick="dtToggleSort(\'date\')" style="cursor:pointer;user-select:none;white-space:nowrap">' +
+            'วันที่ ' + (dtSortCol==='date' ? (dtSortDir==='desc'?'&#9660;':'&#9650;') : '<span style="opacity:.35">&#9660;</span>') +
+          '</th>' +
           '<th>เครื่องจักร</th>' +
           '<th>ประเภท</th>' +
           '<th>รายละเอียด</th>' +
-          '<th class="num-right dt-sort-th" onclick="dtToggleSort()" style="cursor:pointer;user-select:none;white-space:nowrap">' +
-            'ชั่วโมง ' + (dtSortDir === 'desc' ? '&#9660;' : '&#9650;') +
+          '<th class="num-right dt-sort-th" onclick="dtToggleSort(\'smu\')" style="cursor:pointer;user-select:none;white-space:nowrap">' +
+            'ชั่วโมง ' + (dtSortCol==='smu' ? (dtSortDir==='desc'?'&#9660;':'&#9650;') : '<span style="opacity:.35">&#9660;</span>') +
           '</th>' +
         '</tr></thead>' +
         '<tbody>' + tableBody + '</tbody>' +
@@ -548,8 +556,13 @@ function dtToggleType(t) {
   renderDetailTable(filterD(allMerged, mo, ty));
 }
 
-function dtToggleSort() {
-  dtSortDir = dtSortDir === 'desc' ? 'asc' : 'desc';
+function dtToggleSort(col) {
+  if (dtSortCol === col) {
+    dtSortDir = dtSortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    dtSortCol = col;
+    dtSortDir = 'desc';
+  }
   const mo = document.getElementById('sel-mo') ? document.getElementById('sel-mo').value : 'all';
   const ty = document.getElementById('sel-ty') ? document.getElementById('sel-ty').value : 'all';
   renderDetailTable(filterD(allMerged, mo, ty));
@@ -911,10 +924,16 @@ function buildShell() {
    LOAD DATA
 ══════════════════════════════════════════════════════════════ */
 async function fetchCSV(url) {
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`HTTP ${resp.status} — ${url}`);
+  const resp = await fetch(url, { cache: 'no-store' });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const text = await resp.text();
-  return Papa.parse(text, { header:true, skipEmptyLines:true }).data;
+  /* Fast parse: skip empty + dynamic typing off to avoid regex overhead */
+  return Papa.parse(text, {
+    header: true,
+    skipEmptyLines: true,
+    dynamicTyping: false,
+    worker: false,
+  }).data;
 }
 
 async function init() {
