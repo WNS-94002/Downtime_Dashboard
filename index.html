@@ -93,26 +93,31 @@
   .bar-bg { background:var(--border); border-radius:4px; height:5px; margin-top:4px; }
   .bar-f { height:5px; border-radius:4px; }
 
-  /* ── Top5 ─────────────────────────────────────────────────── */
+  /* ── Section & Detail Table ─────────────────────────────── */
   .section-hdr { font-size:11px; font-weight:500; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.07em; margin:1.5rem 0 .75rem; }
-  .top5-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin-bottom:1.5rem; }
-  .top5-card { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; }
-  .top5-card-hdr { display:flex; align-items:center; gap:10px; padding:.75rem 1rem; border-bottom:0.5px solid var(--border); }
-  .top5-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
-  .top5-machine { font-size:13px; font-weight:500; color:var(--text-primary); }
-  .top5-total { margin-left:auto; font-size:11px; color:var(--text-secondary); }
-  .top5-item { display:flex; align-items:flex-start; gap:8px; padding:.65rem 1rem; border-bottom:0.5px solid var(--border-light); }
-  .top5-item:last-child { border-bottom:none; }
-  .top5-rank { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; flex-shrink:0; margin-top:1px; }
-  .top5-info { flex:1; min-width:0; }
-  .top5-detail { font-size:11px; color:var(--text-primary); line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .top5-meta { display:flex; align-items:center; gap:6px; margin-top:3px; flex-wrap:wrap; }
-  .top5-date { font-size:10px; color:var(--text-secondary); }
-  .top5-type { display:inline-block; padding:1px 6px; border-radius:10px; font-size:9px; font-weight:500; }
-  .top5-smu { font-size:12px; font-weight:500; flex-shrink:0; text-align:right; margin-top:1px; }
-  .top5-smu-unit { font-size:9px; font-weight:400; }
   .merged-badge { display:inline-flex; align-items:center; gap:3px; padding:1px 6px; border-radius:10px; font-size:9px; font-weight:500; background:#534ab722; color:#534ab7; }
   .no-data { padding:1.5rem 1rem; text-align:center; font-size:12px; color:var(--text-secondary); }
+
+  /* ── Detail Table Controls ───────────────────────────────── */
+  .dt-controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .dt-machine-btns { display:flex; flex-wrap:wrap; gap:6px; }
+  .dt-mach-btn {
+    padding:5px 12px; border-radius:20px; font-size:11px; font-weight:500;
+    cursor:pointer; border:0.5px solid var(--border); background:var(--bg-secondary);
+    color:var(--text-secondary); transition:all .15s; white-space:nowrap;
+  }
+  .dt-mach-btn:hover { border-color:var(--text-secondary); color:var(--text-primary); }
+  .dt-mach-btn.active { color:#fff; border-color:transparent; }
+  .dt-type-btns { display:flex; gap:4px; flex-wrap:wrap; margin-left:auto; }
+  .dt-type-btn {
+    padding:4px 10px; border-radius:20px; font-size:11px; font-weight:500;
+    cursor:pointer; border:0.5px solid var(--border); background:var(--bg-secondary);
+    color:var(--text-secondary); transition:all .15s;
+  }
+  .dt-type-btn:hover { opacity:.85; }
+  .dt-type-btn.active { color:#fff; border-color:transparent; }
+  .dt-count { font-size:11px; color:var(--text-secondary); white-space:nowrap; padding-left:4px; }
+  .dt-detail-col { max-width:320px; white-space:normal; line-height:1.4; font-size:11.5px; }
 
   /* ── MTBF/MTTR section ────────────────────────────────────── */
   .info-box { font-size:11px; color:var(--text-secondary); background:var(--bg-secondary); border-radius:8px; padding:8px 12px; margin-bottom:1rem; line-height:1.8; }
@@ -419,24 +424,107 @@ function calcGroupMA(data, machines, failTypes) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   TOP-5 CARD
+   DETAIL TABLE STATE & RENDER
 ══════════════════════════════════════════════════════════════ */
-function top5HTML(machine,fd,color){
-  const items=fd.filter(r=>r.machine===machine).sort((a,b)=>b.smu-a.smu).slice(0,5);
-  const total=sumS(fd.filter(r=>r.machine===machine)), mx=items[0]?.smu||1;
-  if(!items.length) return`<div class="top5-card"><div class="top5-card-hdr"><span class="top5-dot" style="background:${color}"></span><span class="top5-machine">${machine}</span></div><div class="no-data">ไม่มีข้อมูล</div></div>`;
-  return`<div class="top5-card">
-    <div class="top5-card-hdr"><span class="top5-dot" style="background:${color}"></span><span class="top5-machine">${machine}</span><span class="top5-total">${total.toFixed(1)} ชม. รวม</span></div>
-    ${items.map((r,i)=>`<div class="top5-item">
-      <div class="top5-rank" style="background:${RANK_BG[i]};color:${RANK_TXT[i]}">${i+1}</div>
-      <div class="top5-info">
-        <div class="top5-detail" title="${r.detail}">${r.detail||'—'}</div>
-        <div class="top5-meta"><span class="top5-date">${fmtDate(r.date)}</span><span class="top5-type" style="background:${(TC[r.type]||'#888')}22;color:${TC[r.type]||'#888'}">${r.type}</span>${r.mergedCount>1?`<span class="merged-badge">รวม ${r.mergedCount} กะ</span>`:''}</div>
-        <div style="height:3px;background:var(--border);border-radius:3px;margin-top:5px"><div style="height:3px;border-radius:3px;width:${(r.smu/mx*100).toFixed(1)}%;background:${color}"></div></div>
-      </div>
-      <div class="top5-smu" style="color:${color}">${r.smu.toFixed(1)}<span class="top5-smu-unit"> ชม.</span></div>
-    </div>`).join('')}
-  </div>`;
+let dtMachine = 'all';  /* selected machine filter */
+let dtTypes   = new Set(['Plan','ME','EE','OPT','Uncontrol']); /* active type filters */
+const DT_TYPES = ['Plan','ME','EE','OPT','Uncontrol'];
+
+function renderDetailTable(fd) {
+  /* apply machine + type filters */
+  let rows = fd.filter(r =>
+    (dtMachine === 'all' || r.machine === dtMachine) &&
+    dtTypes.has(r.type)
+  );
+  /* sort: newest first, then by smu desc */
+  rows = [...rows].sort((a,b)=> {
+    const dd = (b.date||new Date(0)) - (a.date||new Date(0));
+    return dd !== 0 ? dd : b.smu - a.smu;
+  });
+
+  const totalSMU = sumS(rows);
+
+  /* machine buttons */
+  const machBtns = ['all', ...MACHINES].map((m,i) => {
+    const isAll  = m === 'all';
+    const color  = isAll ? '#185fa5' : MC[i-1];
+    const active = m === dtMachine;
+    const lbl    = isAll ? 'ทั้งหมด' : MSHORT[i-1];
+    const cnt    = isAll ? fd.filter(r=>dtTypes.has(r.type)).length
+                         : fd.filter(r=>r.machine===m&&dtTypes.has(r.type)).length;
+    return `<button class="dt-mach-btn${active?' active':''}"
+      style="${active?`background:${color};`:'color:var(--text-secondary)'}"
+      onclick="dtSetMachine('${m}')">
+      ${isAll?'':'<span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:'+(active?'rgba(255,255,255,.7)':color)+';margin-right:5px;vertical-align:middle"></span>'}${lbl} <span style="opacity:.65;font-size:10px">${cnt}</span>
+    </button>`;
+  }).join('');
+
+  /* type toggle buttons */
+  const typeBtns = DT_TYPES.map(t => {
+    const on = dtTypes.has(t);
+    return `<button class="dt-type-btn${on?' active':''}"
+      style="${on?`background:${TC[t]||'#888'};`:'border-color:'+(TC[t]||'#888')+';color:'+(TC[t]||'#888')}"
+      onclick="dtToggleType('${t}')">
+      ${t}
+    </button>`;
+  }).join('');
+
+  const tableBody = rows.length === 0
+    ? `<tr><td colspan="5" class="no-data">ไม่มีข้อมูลที่ตรงกับตัวกรอง</td></tr>`
+    : rows.map(r => {
+        const color = MC[MACHINES.indexOf(r.machine)] || '#888';
+        return `<tr>
+          <td style="white-space:nowrap;font-size:11px">${fmtDate(r.date)}</td>
+          <td>
+            <span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${color};margin-right:6px;vertical-align:middle"></span>
+            <span style="font-weight:500;font-size:12px">${r.machine}</span>
+          </td>
+          <td>
+            <span class="pill" style="background:${(TC[r.type]||'#888')}22;color:${TC[r.type]||'#888'}">${r.type}</span>
+          </td>
+          <td class="dt-detail-col">${r.detail||'—'}${r.mergedCount>1?` <span class="merged-badge">รวม ${r.mergedCount} กะ</span>`:''}</td>
+          <td class="num-right" style="font-weight:500;color:${color};font-size:12px">${r.smu.toFixed(1)} <span style="font-size:10px;opacity:.6">ชม.</span></td>
+        </tr>`;
+      }).join('');
+
+  document.getElementById('dt-panel').innerHTML = `
+    <div class="panel-hdr">
+      <span class="panel-title">รายละเอียด Downtime</span>
+      <span class="dt-count">${rows.length} รายการ · รวม ${totalSMU.toFixed(1)} ชม.</span>
+    </div>
+    <div class="dt-controls">
+      <div class="dt-machine-btns">${machBtns}</div>
+      <div class="dt-type-btns">${typeBtns}</div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>วันที่</th>
+          <th>เครื่องจักร</th>
+          <th>ประเภท</th>
+          <th>รายละเอียด</th>
+          <th class="num-right">ชั่วโมง</th>
+        </tr></thead>
+        <tbody>${tableBody}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function dtSetMachine(m) {
+  dtMachine = m;
+  const fd = filterD(allMerged, document.getElementById('sel-mo')?.value||'all', 'all');
+  renderDetailTable(fd);
+}
+
+function dtToggleType(t) {
+  if (dtTypes.has(t)) {
+    if (dtTypes.size > 1) dtTypes.delete(t); /* keep at least 1 */
+  } else {
+    dtTypes.add(t);
+  }
+  const fd = filterD(allMerged, document.getElementById('sel-mo')?.value||'all', 'all');
+  renderDetailTable(fd);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -475,9 +563,9 @@ function renderOverview(mo,ty){
         }).join('')}</tbody>
       </table></div>
     </div>
-    <div class="section-hdr">5 อันดับ Downtime สูงสุด แยกตามเครื่องจักร</div>
-    <div class="top5-grid">${MACHINES.map((m,i)=>top5HTML(m,fd,MC[i])).join('')}</div>
+    <div id="dt-panel" class="panel-full"></div>
   `;
+  renderDetailTable(fd);
   ['bar','donut','line'].forEach(dChart);
   charts['bar']=new Chart(document.getElementById('c-bar'),{type:'bar',data:{labels:MSHORT,datasets:[{label:'ชม.',data:MACHINES.map(m=>+bySMU[m].toFixed(2)),backgroundColor:MC.map(c=>c+'cc'),borderColor:MC,borderWidth:1.5,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y.toFixed(1)} ชม.`,title:c=>[MACHINES[c[0].dataIndex]]}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:11}}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:11},callback:v=>v.toFixed(0)}}}}});
   document.getElementById('leg-type').innerHTML=tl.map((t,i)=>`<span class="leg-item"><span class="leg-sq" style="background:${tc2[i]}"></span>${t} ${((tv[i]/tv.reduce((a,b)=>a+b,1))*100).toFixed(0)}%</span>`).join('');
