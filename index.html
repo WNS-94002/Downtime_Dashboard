@@ -118,6 +118,10 @@
   .dt-type-btn.active { color:#fff; border-color:transparent; }
   .dt-count { font-size:11px; color:var(--text-secondary); white-space:nowrap; padding-left:4px; }
   .dt-sort-th:hover { color:var(--text-primary) !important; background:var(--bg-secondary); }
+  .dt-search-wrap { display:flex; align-items:center; gap:6px; background:var(--bg-secondary); border:0.5px solid var(--border); border-radius:20px; padding:5px 12px; }
+  .dt-search-wrap svg { flex-shrink:0; color:var(--text-secondary); }
+  .dt-search-input { border:none; background:transparent; font-size:12px; color:var(--text-primary); outline:none; font-family:inherit; width:200px; }
+  .dt-search-input::placeholder { color:var(--text-secondary); }
   .dt-detail-col { max-width:320px; white-space:normal; line-height:1.4; font-size:11.5px; }
 
   /* ── MTBF/MTTR section ────────────────────────────────────── */
@@ -170,9 +174,13 @@
     @page { size: A4 portrait; margin: 10mm 12mm 10mm 12mm; }
     body { background:#fff !important; color:#000 !important; padding:0; font-size:9pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 
-    /* hide dashboard, show only report */
-    .db > *:not(#print-report) { display:none !important; }
-    #print-report { display:block !important; }
+    /* ── HIDE EVERYTHING by default, then selectively show only the report ── */
+    body > *       { display:none !important; }
+    #app-root      { display:block !important; }
+    #app-root > *  { display:none !important; }
+    #print-report  { display:block !important; }
+    #print-report * { display:revert; }
+    .load-overlay, .topbar, .filter-bar, .print-bar, .tab-row, #tab-content { display:none !important; }
 
     /* ── Machine page wrapper: force one per page ── */
     .rpt-machine-page {
@@ -471,14 +479,28 @@ function calcMTTRMTBF(data) {
     daily[m] = merged;
   });
 
-  /* ── Step 4: summary — based only on days that have failures ── */
+  /* ── Step 4: summary
+       Uptime base = ALL days in range × 24h  (incl. zero-failure days)
+       tAllDays    = rangeDays.length if date range set, else data-day count
+  ── */
   const summary = {};
   MACHINES.forEach(m=>{
-    const rows=daily[m].filter(r=>r.events>0);
-    if(!rows.length){summary[m]={totalFailDT:0,totalUptime:0,totalEvents:0,totalDays:0,mttr:0,mtbf:HRS,ma:100};return;}
-    const tDT  = failRows.reduce((s,r)=>s+r.failSMU, 0);
-    const tEv  = failRows.reduce((s,r)=>s+r.events,  0);
-    const tUp  = Math.max(tAllDays*HRS - tDT, 0);  /* all days in range × 24h − failure DT */
+    const allDayRows  = daily[m];                          /* every day in range */
+    const failRows    = allDayRows.filter(r=>r.events>0);  /* days with ≥1 failure */
+    const tAllDays    = allDayRows.length;                 /* total days in range  */
+
+    if (!failRows.length) {
+      /* no failures at all → full uptime for every day */
+      const tUp = tAllDays * HRS;
+      summary[m] = {totalFailDT:0, totalUptime:tUp, totalEvents:0,
+                    totalDays:tAllDays, mttr:0, mtbf:tAllDays>0?tUp:HRS, ma:100};
+      return;
+    }
+
+    const tDT  = failRows.reduce((s,r)=>s+r.failSMU, 0);   /* total failure DT   */
+    const tEv  = failRows.reduce((s,r)=>s+r.events,  0);   /* total failure events */
+    /* Uptime = all hours in range − failure downtime hours */
+    const tUp  = Math.max(tAllDays*HRS - tDT, 0);
     const mttr = tEv>0 ? tDT/tEv : 0;
     const mtbf = tEv>0 ? tUp/tEv : HRS;
     const ma   = mttr+mtbf>0 ? (mtbf/(mtbf+mttr))*100 : 100;
@@ -490,15 +512,24 @@ function calcMTTRMTBF(data) {
 }
 /* ── Combined MA% for a group ────────────────────────────────── */
 function calcGroupMA(data, machines, failTypes) {
-  /* bucket failure data by day */
-  const byDay = {};
+  /*
+    Correct group-MA for N independent machines (no redundancy, each runs 24h).
+       base hours = tAllDays × 24 × N          (e.g. 31 days × 24 × 2 = 1488)
+       Uptime     = base hours − Σ Failure DT  (from all N machines)
+       MTTR/MTBF  = from the combined totals
+  */
+  const N = machines.length || 1;
+
+  /* Sum DT & events straight from the raw data — no per-day clamping */
+  let tDT = 0, tEv = 0;
   data.filter(r=>machines.includes(r.machine)).forEach(r=>{
-    const dk=dateKey(r.date);
-    if(!byDay[dk]) byDay[dk]={failSMU:0,failEvents:0};
-    if(failTypes.includes(r.type)){ byDay[dk].failSMU+=r.smu; byDay[dk].failEvents+=1; }
+    if(failTypes.includes(r.type)){
+      tDT += r.smu;
+      tEv += 1;
+    }
   });
 
-  /* total days = all days in selected range (same helper used by calcMTTRMTBF) */
+  /* count days in selected range */
   function allDaysInRangeLocal() {
     const days=[];
     if(!dateFrom||!dateTo) return days;
@@ -507,23 +538,19 @@ function calcGroupMA(data, machines, failTypes) {
     while(cur<=end){ days.push(dateKey(cur)); cur.setDate(cur.getDate()+1); }
     return days;
   }
-  const rangeDays = allDaysInRangeLocal();
-  const tAllDays  = rangeDays.length > 0 ? rangeDays.length
-                  : Object.keys(byDay).length; /* fallback when no date range */
+  const tAllDays  = (allDaysInRangeLocal().length) || 1;
+  const baseHours = tAllDays * HRS * N;           /* days × 24 × N machines */
+  const tUp       = Math.max(baseHours - tDT, 0);
 
-  const failRows = Object.values(byDay).filter(v=>v.failEvents>0);
-  if(!failRows.length){
-    const tUp = tAllDays * HRS;
-    return{mttr:0, mtbf:tAllDays>0?tUp:HRS, ma:100,
-           totalDays:tAllDays, totalEvents:0, totalFailDT:0, totalUptime:tUp};
+  if(tEv === 0){
+    return{mttr:0, mtbf:baseHours, ma:100,
+           totalDays:tAllDays, totalEvents:0, totalFailDT:0, totalUptime:baseHours};
   }
-  const tDT = failRows.reduce((s,r)=>s+Math.min(r.failSMU,HRS), 0);
-  const tEv = failRows.reduce((s,r)=>s+r.failEvents, 0);
-  /* Uptime = all hours in range − failure downtime hours */
-  const tUp = Math.max(tAllDays*HRS - tDT, 0);
-  const mttr=tEv>0?tDT/tEv:0, mtbf=tEv>0?tUp/tEv:HRS;
-  const ma=mttr+mtbf>0?(mtbf/(mtbf+mttr))*100:100;
-  return{mttr,mtbf,ma,totalDays:tAllDays,totalEvents:tEv,totalFailDT:tDT,totalUptime:tUp};
+  const mttr = tDT / tEv;
+  const mtbf = tUp / tEv;
+  const ma   = mttr+mtbf>0 ? (mtbf/(mtbf+mttr))*100 : 100;
+  return{mttr, mtbf, ma,
+         totalDays:tAllDays, totalEvents:tEv, totalFailDT:tDT, totalUptime:tUp};
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -532,13 +559,20 @@ function calcGroupMA(data, machines, failTypes) {
 let dtMachine = 'all';
 let dtTypes   = new Set(['Plan','ME','EE','OPT','Uncontrol']);
 let dtSortCol = 'smu';   /* 'smu' | 'date' */
+let dtSearch  = '';       /* free-text search on detail column */
 let dtSortDir = 'desc';  /* 'desc' | 'asc' */
 const DT_TYPES = ['Plan','ME','EE','OPT','Uncontrol'];
 
 function renderDetailTable(fd) {
   /* apply machine + type filters */
+  const searchLower = dtSearch.toLowerCase().trim();
   let rows = fd.filter(function(r) {
-    return (dtMachine === 'all' || r.machine === dtMachine) && dtTypes.has(r.type);
+    if (dtMachine !== 'all' && r.machine !== dtMachine) return false;
+    if (!dtTypes.has(r.type)) return false;
+    if (searchLower && !(r.detail||'').toLowerCase().includes(searchLower)
+        && !r.machine.toLowerCase().includes(searchLower)
+        && !r.type.toLowerCase().includes(searchLower)) return false;
+    return true;
   });
   rows = rows.slice().sort(function(a,b) {
     let diff = 0;
@@ -616,7 +650,13 @@ function renderDetailTable(fd) {
   panel.innerHTML =
     '<div class="panel-hdr">' +
       '<span class="panel-title">รายละเอียด Downtime</span>' +
-      '<span class="dt-count">' + rows.length + ' รายการ · รวม ' + totalSMU.toFixed(1) + ' ชม.</span>' +
+      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+        '<div class="dt-search-wrap">' +
+          '<svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+          '<input class="dt-search-input" id="dt-search-input" type="text" placeholder="ค้นหารายละเอียด เครื่อง หรือประเภท..." value="' + dtSearch + '" oninput="dtDoSearch(this.value)">' +
+        '</div>' +
+        '<span class="dt-count">' + rows.length + ' รายการ · รวม ' + totalSMU.toFixed(1) + ' ชม.</span>' +
+      '</div>' +
     '</div>' +
     '<div class="dt-controls">' +
       '<div class="dt-machine-btns">' + machBtns + '</div>' +
@@ -638,6 +678,16 @@ function renderDetailTable(fd) {
         '<tbody>' + tableBody + '</tbody>' +
       '</table>' +
     '</div>';
+
+  /* Preserve search input focus & caret position across re-render.
+     Without this, each keystroke destroys the input and focus is lost,
+     forcing the user to click back into the field for every character. */
+  const si = document.getElementById('dt-search-input');
+  if (si && dtSearch) {
+    si.focus();
+    const pos = dtSearch.length;
+    try { si.setSelectionRange(pos, pos); } catch(e){}
+  }
 }
 
 function dtSetMachine(m) {
@@ -665,6 +715,13 @@ function dtToggleSort(col) {
     dtSortCol = col;
     dtSortDir = 'desc';
   }
+  const mo = document.getElementById('sel-mo') ? document.getElementById('sel-mo').value : 'all';
+  const ty = document.getElementById('sel-ty') ? document.getElementById('sel-ty').value : 'all';
+  renderDetailTable(filterD(allMerged, mo, ty));
+}
+
+function dtDoSearch(val) {
+  dtSearch = val;
   const mo = document.getElementById('sel-mo') ? document.getElementById('sel-mo').value : 'all';
   const ty = document.getElementById('sel-ty') ? document.getElementById('sel-ty').value : 'all';
   renderDetailTable(filterD(allMerged, mo, ty));
@@ -725,8 +782,27 @@ function renderMTTR(selMachine){
   const dm=daily[selMachine]||[], mColor=MC[MACHINES.indexOf(selMachine)]||'#185fa5';
   const failTypes=FAILURE_TYPES[selMachine]||['ME','EE'];
   document.getElementById('tab-content').innerHTML=`
-    <div class="info-box"><strong>สูตร:</strong> MTTR = Failure DT ÷ จำนวนครั้ง &nbsp;|&nbsp; MTBF = Uptime ÷ จำนวนครั้ง &nbsp;|&nbsp; <strong>MA% = MTBF ÷ (MTBF + MTTR) × 100</strong><br>
-    Crusher / BW / Spreader = ME, EE &nbsp;|&nbsp; System = OPT, ME, EE &nbsp;|&nbsp; Base = 24 ชม./วัน</div>
+    <div class="info-box">
+      <strong>สูตรการคำนวณ MTTR · MTBF · MA%</strong><br>
+      MTTR &nbsp;= &nbsp;Σ Failure Downtime (ชม.) &nbsp;÷ &nbsp;จำนวนครั้ง Failure<br>
+      MTBF &nbsp;= &nbsp;Σ Uptime (ชม.) &nbsp;÷ &nbsp;จำนวนครั้ง Failure<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;โดย Uptime = (จำนวนวันทั้งหมดในช่วงที่เลือก × 24) − Σ Failure DT<br>
+      MA% &nbsp;&nbsp;= &nbsp;MTBF ÷ (MTBF + MTTR) × 100<br>
+      <br>
+      <strong>ประเภทที่นับเป็น Failure (ตามเครื่องจักร)</strong><br>
+      Crusher #1, #2, #3 &nbsp;&nbsp;→ &nbsp;ME, EE เท่านั้น<br>
+      Bucket Wheel #1, #2 →&nbsp;ME, EE เท่านั้น<br>
+      Spreader &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;ME, EE เท่านั้น<br>
+      System &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;OPT, ME, EE<br>
+      <br>
+      <strong>การรวม Crusher และ Bucket Wheel Excavator (ใน Report กลุ่ม)</strong><br>
+      ① รวม Failure DT ของทุกเครื่องในกลุ่มเข้าด้วยกัน (เช่น CR1+CR2)<br>
+      ② นับ Uptime จากช่วงวันที่เลือก × 24 ชม. × <em>จำนวนเครื่องในกลุ่ม</em> &nbsp;− &nbsp;Σ Failure DT รวม<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(เพราะแต่ละเครื่องทำงานอิสระ 24 ชม./วัน ไม่ได้ใช้เครื่องสำรอง)<br>
+      ③ MTTR กลุ่ม = Σ Failure DT รวม ÷ Σ จำนวนครั้ง Failure รวม<br>
+      ④ MTBF กลุ่ม = Σ Uptime รวม ÷ Σ จำนวนครั้ง Failure รวม<br>
+      ⑤ MA% กลุ่ม = MTBF กลุ่ม ÷ (MTBF กลุ่ม + MTTR กลุ่ม) × 100
+    </div>
     <div class="section-hdr" style="margin-top:0">Machine Availability % (สรุปรวม)</div>
     <div class="ma-grid">${MACHINES.map((m,i)=>{const s=summary[m],ma=s?s.ma:100;return`<div class="ma-card"><div class="ma-card-label">${MSHORT[i]}</div><div class="ma-card-val" style="color:${avC(ma)}">${ma.toFixed(1)}<span style="font-size:13px;font-weight:400">%</span></div><div class="ma-card-sub">MA%</div></div>`;}).join('')}</div>
     <div class="panel-full"><div class="panel-hdr"><span class="panel-title">สรุปรวม MTTR · MTBF · MA%</span></div>
@@ -823,7 +899,7 @@ function buildPDFReport(groupKey) {
     const totalDT = sumS(mData);
     const byType = {}; TYPE_ORDER.forEach(t=>byType[t]=0);
     mData.forEach(r=>{ if(byType[r.type]!==undefined) byType[r.type]+=r.smu; });
-    const dailyR = (daily[m]||[]).filter(r=>r.events>0||r.allSMU>0);
+    const dailyR = (daily[m]||[]);  /* all days in range incl. zero-failure days */
 
 
     /* combined MA for the group (shown on each page of multi-machine groups) */
@@ -900,15 +976,17 @@ function buildPDFReport(groupKey) {
               <th class="num">MA%</th>
             </tr></thead>
             <tbody>
-              ${dailyR.map(r=>`<tr>
+              ${dailyR.map(r=>{
+                const nf = r.events===0;
+                return `<tr style="${nf?'color:#aaa':''}">
                 <td style="white-space:nowrap">${fmtDate(r.date)}</td>
-                <td class="num">${r.events}</td>
-                <td class="num">${r.failSMU.toFixed(2)}</td>
+                <td class="num">${nf?'<span style="color:#bbb">—</span>':r.events}</td>
+                <td class="num">${nf?'<span style="color:#bbb">—</span>':r.failSMU.toFixed(2)}</td>
                 <td class="num">${r.uptime.toFixed(2)}</td>
-                <td class="num bold ${r.events>0?mClass(r.mttr):''}">${r.events>0?r.mttr.toFixed(2):'—'}</td>
-                <td class="num bold ${r.events>0?bClass(r.mtbf):''}">${r.events>0?r.mtbf.toFixed(2):'—'}</td>
-                <td class="num bold ${r.events>0?maClass(r.ma):''}">${r.events>0?r.ma.toFixed(1)+'%':'—'}</td>
-              </tr>`).join('')}
+                <td class="num bold ${nf?'':mClass(r.mttr)}" style="${nf?'color:#bbb':''}">${r.mttr.toFixed(2)}</td>
+                <td class="num bold ${nf?'rg':bClass(r.mtbf)}">${r.mtbf.toFixed(2)}</td>
+                <td class="num bold ${nf?'rg':maClass(r.ma)}">${r.ma.toFixed(1)}%</td>
+              </tr>`;}).join('')}
             </tbody>
           </table>`}
       </div>
@@ -957,6 +1035,81 @@ function printReport(groupKey) {
 /* ══════════════════════════════════════════════════════════════
    DATE / FILTER HELPERS
 ══════════════════════════════════════════════════════════════ */
+function showDebugCalc() {
+  const el = document.getElementById('debug-panel');
+  if (!el) return;
+  if (el.style.display === 'block') { el.style.display = 'none'; return; }
+
+  const rd = rangeData();
+  const tAllDays = (() => {
+    if (!dateFrom || !dateTo) return 0;
+    const cur = new Date(dateFrom); cur.setHours(0,0,0,0);
+    const end = new Date(dateTo);   end.setHours(23,59,59,999);
+    let n = 0;
+    while (cur <= end) { n++; cur.setDate(cur.getDate()+1); }
+    return n;
+  })();
+
+  let out = '';
+  out += 'ช่วงวันที่: ' + fmtDate(dateFrom) + ' — ' + fmtDate(dateTo) + '\n';
+  out += 'จำนวนวัน (tAllDays) = ' + tAllDays + '\n';
+  out += 'จำนวน rows ในช่วง (หลัง merge): ' + rd.length + '\n\n';
+
+  /* Per machine */
+  out += '━━━ ตัวเลขแยกแต่ละเครื่อง (เฉพาะ Failure types) ━━━\n';
+  MACHINES.forEach(m => {
+    const ftypes = FAILURE_TYPES[m];
+    const mData  = rd.filter(r => r.machine === m);
+    const fData  = mData.filter(r => ftypes.includes(r.type));
+    const sumDT  = fData.reduce((s,r)=>s+r.smu, 0);
+    const nEv    = fData.length;
+    const baseH  = tAllDays * HRS;
+    const up     = Math.max(baseH - sumDT, 0);
+    const mttr   = nEv>0 ? sumDT/nEv : 0;
+    const mtbf   = nEv>0 ? up/nEv : baseH;
+    const maA    = baseH>0 ? (up/baseH)*100 : 100;
+    const maB    = (mttr+mtbf)>0 ? (mtbf/(mtbf+mttr))*100 : 100;
+    out += m.padEnd(18) + ' | Fail=' + String(nEv).padStart(3)
+        + ' | DT=' + sumDT.toFixed(2).padStart(8)
+        + ' | Up=' + up.toFixed(2).padStart(8)
+        + ' | MTTR=' + mttr.toFixed(2).padStart(6)
+        + ' | MTBF=' + mtbf.toFixed(2).padStart(7)
+        + ' | MA(A)=' + maA.toFixed(2).padStart(6)
+        + '% | MA(B)=' + maB.toFixed(2).padStart(6) + '%\n';
+  });
+
+  /* Groups */
+  out += '\n━━━ รวมกลุ่ม (Group) ━━━\n';
+  Object.entries(PRINT_GROUPS).forEach(([key, g]) => {
+    const N = g.machines.length;
+    const groupData = rd.filter(r => g.machines.includes(r.machine));
+    const fData     = groupData.filter(r => g.failTypes.includes(r.type));
+    const sumDT     = fData.reduce((s,r)=>s+r.smu, 0);
+    const nEv       = fData.length;
+    const baseH     = tAllDays * HRS * N;
+    const up        = Math.max(baseH - sumDT, 0);
+    const mttr      = nEv>0 ? sumDT/nEv : 0;
+    const mtbf      = nEv>0 ? up/nEv : baseH;
+    const maA       = baseH>0 ? (up/baseH)*100 : 100;
+    const maB       = (mttr+mtbf)>0 ? (mtbf/(mtbf+mttr))*100 : 100;
+    out += g.label + ' (N=' + N + '):\n';
+    out += '  เครื่องในกลุ่ม: ' + g.machines.join(', ') + '\n';
+    out += '  FailureTypes: ' + g.failTypes.join(', ') + '\n';
+    out += '  Σ Failure DT = ' + sumDT.toFixed(2) + ' ชม.\n';
+    out += '  Σ Events     = ' + nEv + ' ครั้ง\n';
+    out += '  Base Hours   = ' + tAllDays + ' × 24 × ' + N + ' = ' + baseH + '\n';
+    out += '  Uptime       = ' + baseH + ' − ' + sumDT.toFixed(2) + ' = ' + up.toFixed(2) + '\n';
+    out += '  MTTR         = ' + sumDT.toFixed(2) + '/' + nEv + ' = ' + mttr.toFixed(3) + '\n';
+    out += '  MTBF         = ' + up.toFixed(2) + '/' + nEv + ' = ' + mtbf.toFixed(3) + '\n';
+    out += '  MA% (A)      = ' + up.toFixed(2) + '/' + baseH + ' × 100 = ' + maA.toFixed(2) + '%\n';
+    out += '  MA% (B)      = ' + mtbf.toFixed(3) + '/(' + mtbf.toFixed(3) + '+' + mttr.toFixed(3) + ') × 100 = ' + maB.toFixed(2) + '%\n';
+    out += '  ✓ Report แสดง MA% = ' + maA.toFixed(1) + '%\n\n';
+  });
+
+  el.textContent = out;
+  el.style.display = 'block';
+}
+
 function refreshData() {
   /* Clear cache for both sheets then reload */
   try {
@@ -1044,7 +1197,9 @@ function buildShell() {
       <button class="print-btn bw" onclick="printReport('bw')">${SVG_PRINT} Bucket Wheel Excavator</button>
       <button class="print-btn cr" onclick="printReport('cr')">${SVG_PRINT} Crusher (CR#1 + CR#2)</button>
       <button class="print-btn sys" onclick="printReport('sys')">${SVG_PRINT} System</button>
+      <button class="print-btn" style="border-color:#666;color:#666" onclick="showDebugCalc()">🔍 ตรวจตัวเลขคำนวณ</button>
     </div>
+    <div id="debug-panel" style="display:none;background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-xl);padding:1rem 1.25rem;margin-bottom:1rem;font-family:ui-monospace,Menlo,monospace;font-size:11px;white-space:pre-wrap;line-height:1.7"></div>
 
     <!-- Refresh button -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem">
