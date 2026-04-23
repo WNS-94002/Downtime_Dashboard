@@ -471,14 +471,28 @@ function calcMTTRMTBF(data) {
     daily[m] = merged;
   });
 
-  /* ── Step 4: summary — based only on days that have failures ── */
+  /* ── Step 4: summary
+       Uptime base = ALL days in range × 24h  (incl. zero-failure days)
+       tAllDays    = rangeDays.length if date range set, else data-day count
+  ── */
   const summary = {};
   MACHINES.forEach(m=>{
-    const rows=daily[m].filter(r=>r.events>0);
-    if(!rows.length){summary[m]={totalFailDT:0,totalUptime:0,totalEvents:0,totalDays:0,mttr:0,mtbf:HRS,ma:100};return;}
-    const tDT  = failRows.reduce((s,r)=>s+r.failSMU, 0);
-    const tEv  = failRows.reduce((s,r)=>s+r.events,  0);
-    const tUp  = Math.max(tAllDays*HRS - tDT, 0);  /* all days in range × 24h − failure DT */
+    const allDayRows  = daily[m];                          /* every day in range */
+    const failRows    = allDayRows.filter(r=>r.events>0);  /* days with ≥1 failure */
+    const tAllDays    = allDayRows.length;                 /* total days in range  */
+
+    if (!failRows.length) {
+      /* no failures at all → full uptime for every day */
+      const tUp = tAllDays * HRS;
+      summary[m] = {totalFailDT:0, totalUptime:tUp, totalEvents:0,
+                    totalDays:tAllDays, mttr:0, mtbf:tAllDays>0?tUp:HRS, ma:100};
+      return;
+    }
+
+    const tDT  = failRows.reduce((s,r)=>s+r.failSMU, 0);   /* total failure DT   */
+    const tEv  = failRows.reduce((s,r)=>s+r.events,  0);   /* total failure events */
+    /* Uptime = all hours in range − failure downtime hours */
+    const tUp  = Math.max(tAllDays*HRS - tDT, 0);
     const mttr = tEv>0 ? tDT/tEv : 0;
     const mtbf = tEv>0 ? tUp/tEv : HRS;
     const ma   = mttr+mtbf>0 ? (mtbf/(mtbf+mttr))*100 : 100;
