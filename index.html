@@ -188,8 +188,10 @@
       page-break-inside: avoid;
       display: flex;
       flex-direction: column;
-      min-height: 257mm; /* A4 portrait - margins */
+      max-height: 257mm; /* A4 portrait - margins */
+      height: 257mm;
       box-sizing: border-box;
+      overflow: hidden;
     }
     .rpt-machine-page:last-child { page-break-after: auto; }
 
@@ -198,36 +200,39 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      margin-bottom: 6pt;
-      padding-bottom: 5pt;
-      border-bottom: 2pt solid var(--rpt-color, #185fa5);
+      margin-bottom: 3pt;
+      padding-bottom: 3pt;
+      border-bottom: 1.5pt solid var(--rpt-color, #185fa5);
+      flex-shrink: 0;
     }
-    .rpt-page-header-title { font-size:14pt; font-weight:700; }
-    .rpt-page-header-sub   { font-size:8pt;  color:#555 !important; margin-top:2pt; }
-    .rpt-page-header-meta  { font-size:7.5pt; color:#555 !important; text-align:right; line-height:1.6; }
+    .rpt-page-header-title { font-size:12pt; font-weight:700; }
+    .rpt-page-header-sub   { font-size:7pt;  color:#555 !important; margin-top:1pt; }
+    .rpt-page-header-meta  { font-size:6.5pt; color:#555 !important; text-align:right; line-height:1.4; }
 
     /* ── Section title ── */
     .rpt-sec-title {
-      font-size:8pt; font-weight:700; text-transform:uppercase;
-      letter-spacing:.05em; margin:6pt 0 4pt;
-      padding-bottom:2pt; border-bottom:0.5pt solid #ccc;
+      font-size:7pt; font-weight:700; text-transform:uppercase;
+      letter-spacing:.04em; margin:3pt 0 2pt;
+      padding-bottom:1.5pt; border-bottom:0.5pt solid #ccc;
       color:#333 !important;
+      flex-shrink: 0;
     }
     .rpt-sec-title.accent { border-bottom-color: var(--rpt-color, #185fa5) !important; }
 
     /* ── KPI bar (summary numbers) ── */
     .rpt-kpi-bar {
-      display:flex; gap:6pt; margin-bottom:6pt; flex-wrap:nowrap;
+      display:flex; gap:4pt; margin-bottom:4pt; flex-wrap:nowrap;
+      flex-shrink: 0;
     }
     .rpt-kpi-box {
-      flex:1; border:0.5pt solid #ddd; border-radius:3pt;
-      padding:4pt 6pt; min-width:0;
-      border-left: 2pt solid var(--rpt-color, #ccc) !important;
+      flex:1; border:0.5pt solid #ddd; border-radius:2pt;
+      padding:3pt 4pt; min-width:0;
+      border-left: 1.5pt solid var(--rpt-color, #ccc) !important;
     }
-    .rpt-kpi-box-label { font-size:6.5pt; color:#666 !important; text-transform:uppercase; letter-spacing:.04em; margin-bottom:1pt; }
-    .rpt-kpi-box-val   { font-size:13pt; font-weight:700; line-height:1.1; }
-    .rpt-kpi-box-unit  { font-size:6.5pt; color:#777 !important; margin-top:1pt; }
-    .rpt-kpi-ma        { background:#f0f7ff !important; border-left-width:3pt !important; }
+    .rpt-kpi-box-label { font-size:6pt; color:#666 !important; text-transform:uppercase; letter-spacing:.03em; margin-bottom:0.5pt; }
+    .rpt-kpi-box-val   { font-size:11pt; font-weight:700; line-height:1; }
+    .rpt-kpi-box-unit  { font-size:6pt; color:#777 !important; margin-top:0.5pt; }
+    .rpt-kpi-ma        { background:#f0f7ff !important; border-left-width:2pt !important; }
 
     /* ── Sub-machine MA row (for groups with 2 machines) ── */
     .rpt-submachine-row { display:flex; gap:6pt; margin-bottom:6pt; }
@@ -240,14 +245,14 @@
     .rpt-submachine-detail { font-size:7pt; color:#666 !important; }
 
     /* ── Tables ── */
-    .rpt-table-wrap { overflow:hidden; margin-bottom:6pt; }
-    .rpt-table { width:100%; border-collapse:collapse; font-size:7.5pt; }
+    .rpt-table-wrap { overflow:hidden; margin-bottom:3pt; flex-shrink: 0; }
+    .rpt-table { width:100%; border-collapse:collapse; font-size:6.5pt; }
     .rpt-table th {
       background:#f4f4f4 !important; color:#222 !important;
-      padding:3pt 5pt; border:0.5pt solid #ccc;
-      font-size:7pt; font-weight:700; text-align:left; white-space:nowrap;
+      padding:2pt 3pt; border:0.5pt solid #ccc;
+      font-size:6pt; font-weight:700; text-align:left; white-space:nowrap;
     }
-    .rpt-table td { padding:2.5pt 5pt; border:0.5pt solid #e0e0e0; vertical-align:middle; }
+    .rpt-table td { padding:1.5pt 3pt; border:0.5pt solid #e0e0e0; vertical-align:middle; line-height:1.2; }
     .rpt-table tr:nth-child(even) td { background:#fafafa !important; }
     .rpt-table .tr { text-align:right; }
     .rpt-table .num { text-align:right; font-variant-numeric:tabular-nums; }
@@ -260,19 +265,20 @@
     .rpt-top5-sub { font-size:7.5pt; font-weight:700; margin:4pt 0 2pt; color:#333 !important; }
 
     /* ── Signature block — compact, at bottom of each page ── */
-    .rpt-sig-spacer { flex:1; min-height:4pt; }
+    .rpt-sig-spacer { flex:1; min-height:2pt; }
     .rpt-sig-block {
-      margin-top:6pt;
+      margin-top:3pt;
       border-top:0.5pt solid #bbb;
-      padding-top:4pt;
+      padding-top:2pt;
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:16pt;
+      gap:10pt;
+      flex-shrink: 0;
     }
     .rpt-sig-box { text-align:center; }
-    .rpt-sig-role { font-size:7.5pt; font-weight:700; color:#222 !important; margin-bottom:14pt; }
-    .rpt-sig-line { border-bottom:0.5pt solid #555; margin-bottom:3pt; }
-    .rpt-sig-detail { font-size:7pt; color:#555 !important; line-height:1.5; }
+    .rpt-sig-role { font-size:6.5pt; font-weight:700; color:#222 !important; margin-bottom:8pt; }
+    .rpt-sig-line { border-bottom:0.5pt solid #555; margin-bottom:2pt; }
+    .rpt-sig-detail { font-size:6pt; color:#555 !important; line-height:1.3; }
 
     .no-print { display:none !important; }
   }
