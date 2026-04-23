@@ -221,14 +221,15 @@
 
     /* ── KPI bar (summary numbers) ── */
     .rpt-kpi-bar {
-      display:flex; gap:4pt; margin-bottom:4pt; flex-wrap:wrap;
+      display:flex; gap:4pt; margin-bottom:4pt; flex-wrap:nowrap; overflow-x:auto;
       flex-shrink: 0;
     }
     .rpt-kpi-box {
-      flex:1; border:0.5pt solid #ddd; border-radius:2pt;
-      padding:4pt 6pt; min-width:0;
+      flex:0 1 auto; border:0.5pt solid #ddd; border-radius:2pt;
+      padding:4pt 6pt; min-width:auto;
       border-left: 1.5pt solid var(--rpt-color, #ccc) !important;
       display: flex; flex-direction: column; justify-content: center;
+      white-space:nowrap;
     }
     .rpt-kpi-box-label { font-size:6pt; color:#666 !important; text-transform:uppercase; letter-spacing:.03em; margin-bottom:1pt; }
     .rpt-kpi-box-val   { font-size:12pt; font-weight:700; line-height:1; }
