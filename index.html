@@ -476,34 +476,54 @@ function calcMTTRMTBF(data) {
   MACHINES.forEach(m=>{
     const rows=daily[m].filter(r=>r.events>0);
     if(!rows.length){summary[m]={totalFailDT:0,totalUptime:0,totalEvents:0,totalDays:0,mttr:0,mtbf:HRS,ma:100};return;}
-    const tDT=rows.reduce((s,r)=>s+r.failSMU,0), tEv=rows.reduce((s,r)=>s+r.events,0), tD=rows.length;
-    const tUp=Math.max(tD*HRS-tDT,0);
-    const mttr=tEv>0?tDT/tEv:0, mtbf=tEv>0?tUp/tEv:HRS;
-    const ma=mttr+mtbf>0?(mtbf/(mtbf+mttr))*100:100;
-    summary[m]={totalFailDT:tDT,totalUptime:tUp,totalEvents:tEv,totalDays:tD,mttr,mtbf,ma};
+    const tDT  = failRows.reduce((s,r)=>s+r.failSMU, 0);
+    const tEv  = failRows.reduce((s,r)=>s+r.events,  0);
+    const tUp  = Math.max(tAllDays*HRS - tDT, 0);  /* all days in range × 24h − failure DT */
+    const mttr = tEv>0 ? tDT/tEv : 0;
+    const mtbf = tEv>0 ? tUp/tEv : HRS;
+    const ma   = mttr+mtbf>0 ? (mtbf/(mtbf+mttr))*100 : 100;
+    summary[m] = {totalFailDT:tDT, totalUptime:tUp, totalEvents:tEv,
+                  totalDays:tAllDays, mttr, mtbf, ma};
   });
 
   return{daily,summary};
 }
 /* ── Combined MA% for a group ────────────────────────────────── */
 function calcGroupMA(data, machines, failTypes) {
-  /* filter data to the group's machines & fail types */
-  const fd = data.filter(r => machines.includes(r.machine) && failTypes.includes(r.type));
-  /* daily events per group-day */
+  /* bucket failure data by day */
   const byDay = {};
   data.filter(r=>machines.includes(r.machine)).forEach(r=>{
     const dk=dateKey(r.date);
-    if(!byDay[dk]) byDay[dk]={failSMU:0,failEvents:0,date:r.date};
+    if(!byDay[dk]) byDay[dk]={failSMU:0,failEvents:0};
     if(failTypes.includes(r.type)){ byDay[dk].failSMU+=r.smu; byDay[dk].failEvents+=1; }
   });
-  const rows = Object.values(byDay).filter(v=>v.failEvents>0);
-  if(!rows.length) return {mttr:0,mtbf:HRS,ma:100,totalDays:0,totalEvents:0,totalFailDT:0,totalUptime:0};
-  const tDT=rows.reduce((s,r)=>s+Math.min(r.failSMU,HRS),0);
-  const tEv=rows.reduce((s,r)=>s+r.failEvents,0);
-  const tD=rows.length, tUp=Math.max(tD*HRS-tDT,0);
+
+  /* total days = all days in selected range (same helper used by calcMTTRMTBF) */
+  function allDaysInRangeLocal() {
+    const days=[];
+    if(!dateFrom||!dateTo) return days;
+    const cur=new Date(dateFrom); cur.setHours(0,0,0,0);
+    const end=new Date(dateTo);   end.setHours(23,59,59,999);
+    while(cur<=end){ days.push(dateKey(cur)); cur.setDate(cur.getDate()+1); }
+    return days;
+  }
+  const rangeDays = allDaysInRangeLocal();
+  const tAllDays  = rangeDays.length > 0 ? rangeDays.length
+                  : Object.keys(byDay).length; /* fallback when no date range */
+
+  const failRows = Object.values(byDay).filter(v=>v.failEvents>0);
+  if(!failRows.length){
+    const tUp = tAllDays * HRS;
+    return{mttr:0, mtbf:tAllDays>0?tUp:HRS, ma:100,
+           totalDays:tAllDays, totalEvents:0, totalFailDT:0, totalUptime:tUp};
+  }
+  const tDT = failRows.reduce((s,r)=>s+Math.min(r.failSMU,HRS), 0);
+  const tEv = failRows.reduce((s,r)=>s+r.failEvents, 0);
+  /* Uptime = all hours in range − failure downtime hours */
+  const tUp = Math.max(tAllDays*HRS - tDT, 0);
   const mttr=tEv>0?tDT/tEv:0, mtbf=tEv>0?tUp/tEv:HRS;
   const ma=mttr+mtbf>0?(mtbf/(mtbf+mttr))*100:100;
-  return{mttr,mtbf,ma,totalDays:tD,totalEvents:tEv,totalFailDT:tDT,totalUptime:tUp};
+  return{mttr,mtbf,ma,totalDays:tAllDays,totalEvents:tEv,totalFailDT:tDT,totalUptime:tUp};
 }
 
 /* ══════════════════════════════════════════════════════════════
