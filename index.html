@@ -221,15 +221,24 @@
 
     /* ── KPI bar (summary numbers) ── */
     .rpt-kpi-bar {
-      display:flex; gap:4pt; margin-bottom:4pt; flex-wrap:nowrap; overflow-x:auto;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 4pt;
+      margin-bottom: 4pt;
+      flex-wrap: nowrap !important;
       flex-shrink: 0;
+      width: 100%;
     }
     .rpt-kpi-box {
-      flex:0 1 auto; border:0.5pt solid #ddd; border-radius:2pt;
-      padding:4pt 6pt; min-width:auto;
+      flex: 1 !important;
+      border: 0.5pt solid #ddd;
+      border-radius: 2pt;
+      padding: 4pt 6pt;
       border-left: 1.5pt solid var(--rpt-color, #ccc) !important;
-      display: flex; flex-direction: column; justify-content: center;
-      white-space:nowrap;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center;
+      min-width: 0;
     }
     .rpt-kpi-box-label { font-size:6pt; color:#666 !important; text-transform:uppercase; letter-spacing:.03em; margin-bottom:1pt; }
     .rpt-kpi-box-val   { font-size:12pt; font-weight:700; line-height:1; }
@@ -269,13 +278,14 @@
     /* ── Signature block — compact, at bottom of each page ── */
     .rpt-sig-spacer { flex:1; min-height:2pt; }
     .rpt-sig-block {
-      margin-top:3pt;
-      border-top:0.5pt solid #bbb;
-      padding-top:2pt;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10pt;
+      margin-top: 3pt;
+      border-top: 0.5pt solid #bbb;
+      padding-top: 2pt;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 10pt;
       flex-shrink: 0;
+      width: 100%;
     }
     .rpt-sig-box { text-align:center; }
     .rpt-sig-role { font-size:7pt; font-weight:700; color:#222 !important; margin-bottom:12pt; }
@@ -887,7 +897,7 @@ function buildPDFReport(groupKey) {
   /* ── Signature block (shared, compact) ── */
   const sigBlock = `
     <div class="rpt-sig-spacer"></div>
-    <div class="rpt-sig-block">
+    <div class="rpt-sig-block" style="display:grid !important; grid-template-columns:1fr 1fr !important; gap:10pt !important; width:100% !important;">
       <div class="rpt-sig-box">
         <div class="rpt-sig-role">ผู้รายงาน</div>
         <div class="rpt-sig-line"></div>
@@ -944,20 +954,20 @@ function buildPDFReport(groupKey) {
       </div>
 
       <!-- MA% KPI BAR -->
-      <div class="rpt-kpi-bar">
-        <div class="rpt-kpi-box rpt-kpi-ma" style="border-left-color:${color} !important">
+      <div class="rpt-kpi-bar" style="display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; gap:4pt !important; width:100% !important;">
+        <div class="rpt-kpi-box rpt-kpi-ma" style="flex:1 !important; border-left-color:${color} !important; display:flex !important; flex-direction:column !important;">
           <div class="rpt-kpi-box-label">MA% — ${m}</div>
           <div class="rpt-kpi-box-val ${maClass(s.ma)}">${s.ma.toFixed(1)}<span style="font-size:7pt;font-weight:400">%</span></div>
         </div>
-        ${showGroupMA ? `<div class="rpt-kpi-box rpt-kpi-ma" style="border-left-color:#888 !important">
+        ${showGroupMA ? `<div class="rpt-kpi-box rpt-kpi-ma" style="flex:1 !important; border-left-color:#888 !important; display:flex !important; flex-direction:column !important;">
           <div class="rpt-kpi-box-label">MA% รวม ${grp.label}</div>
           <div class="rpt-kpi-box-val ${maClass(gma.ma)}">${gma.ma.toFixed(1)}<span style="font-size:7pt;font-weight:400">%</span></div>
         </div>` : ''}
-        <div class="rpt-kpi-box">
+        <div class="rpt-kpi-box" style="flex:1 !important; display:flex !important; flex-direction:column !important;">
           <div class="rpt-kpi-box-label">MTTR</div>
           <div class="rpt-kpi-box-val ${mClass(s.mttr)}">${s.mttr.toFixed(2)} <span style="font-size:7pt;font-weight:400">ชม.</span></div>
         </div>
-        <div class="rpt-kpi-box">
+        <div class="rpt-kpi-box" style="flex:1 !important; display:flex !important; flex-direction:column !important;">
           <div class="rpt-kpi-box-label">MTBF</div>
           <div class="rpt-kpi-box-val ${bClass(s.mtbf)}">${s.mtbf.toFixed(2)} <span style="font-size:7pt;font-weight:400">ชม.</span></div>
         </div>
