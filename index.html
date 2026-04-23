@@ -130,6 +130,35 @@
   .ma-card-sub { font-size:10px; color:var(--text-secondary); margin-top:2px; }
 
   /* ── States ───────────────────────────────────────────────── */
+  /* ── Loading Overlay ─────────────────────────────────────── */
+  .load-overlay {
+    position:fixed; inset:0; z-index:9999;
+    background:var(--bg-tertiary);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:20px;
+  }
+  .load-overlay.hidden { display:none; }
+  .load-logo {
+    width:48px; height:48px; border-radius:14px;
+    background:#185fa5;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 24px rgba(24,95,165,.35);
+  }
+  .load-logo svg { width:24px; height:24px; stroke:#fff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .load-title { font-size:16px; font-weight:500; color:var(--text-primary); }
+  .load-sub   { font-size:12px; color:var(--text-secondary); margin-top:-12px; }
+  .load-bar-wrap {
+    width:240px; height:5px;
+    background:var(--border);
+    border-radius:5px; overflow:hidden;
+  }
+  .load-bar {
+    height:5px; border-radius:5px;
+    background: linear-gradient(90deg, #185fa5, #4a90d9);
+    width:0%;
+    transition:width .4s ease;
+  }
+  .load-step { font-size:11px; color:var(--text-secondary); min-height:16px; text-align:center; }
   .load-msg { text-align:center; padding:4rem; color:var(--text-secondary); font-size:14px; }
   .err { background:#fcebeb; color:#a32d2d; border-radius:var(--radius-lg); padding:1rem 1.25rem; font-size:13px; margin:1rem 0; border:0.5px solid #f09595; }
   @media(prefers-color-scheme:dark){ .err { background:#2e1515; color:#f09595; border-color:#791f1f; } }
@@ -245,6 +274,18 @@
 </style>
 </head>
 <body>
+<!-- Loading Overlay -->
+<div class="load-overlay" id="load-overlay">
+  <div class="load-logo">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+  </div>
+  <div class="load-title">Machine Downtime Dashboard</div>
+  <div class="load-sub" id="load-step">กำลังเชื่อมต่อ Google Sheets...</div>
+  <div class="load-bar-wrap">
+    <div class="load-bar" id="load-bar"></div>
+  </div>
+</div>
+
 <div class="db" id="app-root">
   <div id="app"><div class="load-msg">กำลังโหลดข้อมูล...</div></div>
   <!-- print report injected here by JS -->
@@ -373,6 +414,7 @@ function mtbfC(v) { return v>=18?'#0f6e56':v>=10?'#854f0b':'#a32d2d'; }
    MTTR / MTBF CALCULATION (per machine)
 ══════════════════════════════════════════════════════════════ */
 function calcMTTRMTBF(data) {
+  /* ── Step 1: bucket every data row by machine+date ── */
   const bmd = {}; MACHINES.forEach(m=>bmd[m]={});
   data.forEach(r=>{
     const dk=dateKey(r.date); if(!bmd[r.machine]) return;
@@ -380,48 +422,108 @@ function calcMTTRMTBF(data) {
     bmd[r.machine][dk].allSMU+=r.smu;
     if(isFailure(r.machine,r.type)){ bmd[r.machine][dk].failSMU+=r.smu; bmd[r.machine][dk].failEvents+=1; }
   });
+
+  /* ── Step 2: build a full list of days in [dateFrom, dateTo] ── */
+  function allDaysInRange() {
+    const days = [];
+    if (!dateFrom || !dateTo) return days;
+    const cur = new Date(dateFrom);
+    cur.setHours(0,0,0,0);
+    const end = new Date(dateTo);
+    end.setHours(23,59,59,999);
+    while (cur <= end) {
+      days.push(dateKey(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return days;
+  }
+  const rangeDays = allDaysInRange();
+
+  /* ── Step 3: build daily rows — one per day per machine ── */
   const daily = {};
   MACHINES.forEach(m=>{
-    daily[m]=Object.entries(bmd[m]).map(([dk,v])=>{
+    /* rows from actual data */
+    const dataRows = Object.entries(bmd[m]).map(([dk,v])=>{
       const dt=Math.min(v.failSMU,HRS), up=Math.max(HRS-dt,0);
       const mttr=v.failEvents>0?dt/v.failEvents:0;
       const mtbf=v.failEvents>0?up/v.failEvents:HRS;
       const ma=mttr+mtbf>0?(mtbf/(mtbf+mttr))*100:100;
-      return{dk,date:v.date,allSMU:v.allSMU,failSMU:dt,events:v.failEvents,uptime:up,mttr,mtbf,ma};
-    }).sort((a,b)=>a.dk.localeCompare(b.dk));
+      return{dk,date:v.date,allSMU:v.allSMU,failSMU:dt,events:v.failEvents,uptime:up,mttr,mtbf,ma,hasData:true};
+    });
+    const dataMap = {};
+    dataRows.forEach(r=>dataMap[r.dk]=r);
+
+    /* merge with full date range — fill missing days with zeroes */
+    let merged;
+    if (rangeDays.length > 0) {
+      merged = rangeDays.map(dk=>{
+        if (dataMap[dk]) return dataMap[dk];
+        /* no failure on this day → MTTR=0, MTBF=24, MA%=100 */
+        const d = new Date(dk);
+        return {dk, date:d, allSMU:0, failSMU:0, events:0,
+                uptime:HRS, mttr:0, mtbf:HRS, ma:100, hasData:false};
+      });
+    } else {
+      /* no date range set — fall back to data-only rows */
+      merged = dataRows.sort((a,b)=>a.dk.localeCompare(b.dk));
+    }
+
+    daily[m] = merged;
   });
+
+  /* ── Step 4: summary — based only on days that have failures ── */
   const summary = {};
   MACHINES.forEach(m=>{
     const rows=daily[m].filter(r=>r.events>0);
     if(!rows.length){summary[m]={totalFailDT:0,totalUptime:0,totalEvents:0,totalDays:0,mttr:0,mtbf:HRS,ma:100};return;}
-    const tDT=rows.reduce((s,r)=>s+r.failSMU,0), tEv=rows.reduce((s,r)=>s+r.events,0), tD=rows.length;
-    const tUp=Math.max(tD*HRS-tDT,0);
-    const mttr=tEv>0?tDT/tEv:0, mtbf=tEv>0?tUp/tEv:HRS;
-    const ma=mttr+mtbf>0?(mtbf/(mtbf+mttr))*100:100;
-    summary[m]={totalFailDT:tDT,totalUptime:tUp,totalEvents:tEv,totalDays:tD,mttr,mtbf,ma};
+    const tDT  = failRows.reduce((s,r)=>s+r.failSMU, 0);
+    const tEv  = failRows.reduce((s,r)=>s+r.events,  0);
+    const tUp  = Math.max(tAllDays*HRS - tDT, 0);  /* all days in range × 24h − failure DT */
+    const mttr = tEv>0 ? tDT/tEv : 0;
+    const mtbf = tEv>0 ? tUp/tEv : HRS;
+    const ma   = mttr+mtbf>0 ? (mtbf/(mtbf+mttr))*100 : 100;
+    summary[m] = {totalFailDT:tDT, totalUptime:tUp, totalEvents:tEv,
+                  totalDays:tAllDays, mttr, mtbf, ma};
   });
+
   return{daily,summary};
 }
-
 /* ── Combined MA% for a group ────────────────────────────────── */
 function calcGroupMA(data, machines, failTypes) {
-  /* filter data to the group's machines & fail types */
-  const fd = data.filter(r => machines.includes(r.machine) && failTypes.includes(r.type));
-  /* daily events per group-day */
+  /* bucket failure data by day */
   const byDay = {};
   data.filter(r=>machines.includes(r.machine)).forEach(r=>{
     const dk=dateKey(r.date);
-    if(!byDay[dk]) byDay[dk]={failSMU:0,failEvents:0,date:r.date};
+    if(!byDay[dk]) byDay[dk]={failSMU:0,failEvents:0};
     if(failTypes.includes(r.type)){ byDay[dk].failSMU+=r.smu; byDay[dk].failEvents+=1; }
   });
-  const rows = Object.values(byDay).filter(v=>v.failEvents>0);
-  if(!rows.length) return {mttr:0,mtbf:HRS,ma:100,totalDays:0,totalEvents:0,totalFailDT:0,totalUptime:0};
-  const tDT=rows.reduce((s,r)=>s+Math.min(r.failSMU,HRS),0);
-  const tEv=rows.reduce((s,r)=>s+r.failEvents,0);
-  const tD=rows.length, tUp=Math.max(tD*HRS-tDT,0);
+
+  /* total days = all days in selected range (same helper used by calcMTTRMTBF) */
+  function allDaysInRangeLocal() {
+    const days=[];
+    if(!dateFrom||!dateTo) return days;
+    const cur=new Date(dateFrom); cur.setHours(0,0,0,0);
+    const end=new Date(dateTo);   end.setHours(23,59,59,999);
+    while(cur<=end){ days.push(dateKey(cur)); cur.setDate(cur.getDate()+1); }
+    return days;
+  }
+  const rangeDays = allDaysInRangeLocal();
+  const tAllDays  = rangeDays.length > 0 ? rangeDays.length
+                  : Object.keys(byDay).length; /* fallback when no date range */
+
+  const failRows = Object.values(byDay).filter(v=>v.failEvents>0);
+  if(!failRows.length){
+    const tUp = tAllDays * HRS;
+    return{mttr:0, mtbf:tAllDays>0?tUp:HRS, ma:100,
+           totalDays:tAllDays, totalEvents:0, totalFailDT:0, totalUptime:tUp};
+  }
+  const tDT = failRows.reduce((s,r)=>s+Math.min(r.failSMU,HRS), 0);
+  const tEv = failRows.reduce((s,r)=>s+r.failEvents, 0);
+  /* Uptime = all hours in range − failure downtime hours */
+  const tUp = Math.max(tAllDays*HRS - tDT, 0);
   const mttr=tEv>0?tDT/tEv:0, mtbf=tEv>0?tUp/tEv:HRS;
   const ma=mttr+mtbf>0?(mtbf/(mtbf+mttr))*100:100;
-  return{mttr,mtbf,ma,totalDays:tD,totalEvents:tEv,totalFailDT:tDT,totalUptime:tUp};
+  return{mttr,mtbf,ma,totalDays:tAllDays,totalEvents:tEv,totalFailDT:tDT,totalUptime:tUp};
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -645,19 +747,33 @@ function renderMTTR(selMachine){
       <select id="sel-mach">${MACHINES.map(m=>`<option value="${m}" ${selMachine===m?'selected':''}>${m}</option>`).join('')}</select></div>
       <span style="font-size:11px;color:var(--text-secondary);">Failure: <strong style="color:var(--text-primary)">${failTypes.join(', ')}</strong></span>
     </div>
-    ${dm.length>0?`<div class="grid2"><div class="panel"><div class="panel-hdr"><span class="panel-title">MTTR รายวัน — ${selMachine}</span></div><div class="chart-wrap" style="height:190px"><canvas id="c-mttr-d" role="img" aria-label="mttr d">mttr</canvas></div></div><div class="panel"><div class="panel-hdr"><span class="panel-title">MTBF รายวัน — ${selMachine}</span></div><div class="chart-wrap" style="height:190px"><canvas id="c-mtbf-d" role="img" aria-label="mtbf d">mtbf</canvas></div></div></div>
-    <div class="panel-full"><div class="panel-hdr"><span class="panel-title">MA% รายวัน — ${selMachine}</span></div><div class="chart-wrap" style="height:155px"><canvas id="c-ma-d" role="img" aria-label="ma d">ma</canvas></div></div>`:''}
+    <div class="grid2"><div class="panel"><div class="panel-hdr"><span class="panel-title">MTTR รายวัน — ${selMachine}</span></div><div class="chart-wrap" style="height:190px"><canvas id="c-mttr-d" role="img" aria-label="mttr d">mttr</canvas></div></div><div class="panel"><div class="panel-hdr"><span class="panel-title">MTBF รายวัน — ${selMachine}</span></div><div class="chart-wrap" style="height:190px"><canvas id="c-mtbf-d" role="img" aria-label="mtbf d">mtbf</canvas></div></div></div>
+    <div class="panel-full"><div class="panel-hdr"><span class="panel-title">MA% รายวัน — ${selMachine}</span></div><div class="chart-wrap" style="height:155px"><canvas id="c-ma-d" role="img" aria-label="ma d">ma</canvas></div></div>
     <div class="panel-full"><div class="panel-hdr"><span class="panel-title">ตารางรายวัน — ${selMachine}</span></div>
-    ${dm.length===0?`<div class="no-data">ไม่มีข้อมูล Failure สำหรับ ${selMachine}</div>`:`<div class="tbl-wrap"><table><thead><tr><th>วันที่</th><th class="num-right">ครั้ง</th><th class="num-right">Failure DT</th><th class="num-right">Uptime</th><th class="num-right">MTTR</th><th class="num-right">MTBF</th><th class="num-right">MA%</th></tr></thead><tbody>
-    ${dm.map(r=>`<tr><td style="font-weight:500;white-space:nowrap">${fmtDate(r.date)}</td><td class="num-right">${r.events}</td><td class="num-right">${r.failSMU.toFixed(2)}</td><td class="num-right">${r.uptime.toFixed(2)}</td><td class="num-right"><span style="color:${mttrC(r.mttr)};font-weight:500">${r.mttr.toFixed(2)}</span></td><td class="num-right"><span style="color:${mtbfC(r.mtbf)};font-weight:500">${r.mtbf.toFixed(2)}</span></td><td class="num-right"><span style="color:${avC(r.ma)};font-weight:500">${r.ma.toFixed(1)}%</span></td></tr>`).join('')}
-    </tbody></table></div>`}
+    <div class="tbl-wrap"><table><thead><tr><th>วันที่</th><th class="num-right">ครั้ง Failure</th><th class="num-right">Failure DT (ชม.)</th><th class="num-right">Uptime (ชม.)</th><th class="num-right">MTTR</th><th class="num-right">MTBF</th><th class="num-right">MA%</th></tr></thead><tbody>
+    ${dm.map(r=>{
+      const noFail = r.events === 0;
+      const rowStyle = noFail ? 'opacity:.55' : '';
+      const dateStyle = 'font-weight:500;white-space:nowrap';
+      return `<tr style="${rowStyle}">
+        <td style="${dateStyle}">${fmtDate(r.date)}</td>
+        <td class="num-right">${noFail ? '<span style="color:var(--text-secondary)">—</span>' : r.events}</td>
+        <td class="num-right">${noFail ? '<span style="color:var(--text-secondary)">—</span>' : r.failSMU.toFixed(2)}</td>
+        <td class="num-right">${r.uptime.toFixed(2)}</td>
+        <td class="num-right"><span style="color:${noFail?'var(--text-secondary)':mttrC(r.mttr)};font-weight:${noFail?'400':'500'}">${noFail ? '0.00' : r.mttr.toFixed(2)}</span></td>
+        <td class="num-right"><span style="color:${noFail?'#0f6e56':mtbfC(r.mtbf)};font-weight:${noFail?'400':'500'}">${r.mtbf.toFixed(2)}</span></td>
+        <td class="num-right"><span style="color:${noFail?'#0f6e56':avC(r.ma)};font-weight:${noFail?'400':'500'}">${r.ma.toFixed(1)}%</span></td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div>
     </div>
   `;
   document.getElementById('sel-mach').addEventListener('change',e=>renderMTTR(e.target.value));
   ['mttr-all','mtbf-all','mttr-d','mtbf-d','ma-d'].forEach(dChart);
   charts['mttr-all']=new Chart(document.getElementById('c-mttr-all'),{type:'bar',data:{labels:MSHORT,datasets:[{label:'MTTR',data:MACHINES.map(m=>+(summary[m]?.mttr||0).toFixed(2)),backgroundColor:MC.map(c=>c+'cc'),borderColor:MC,borderWidth:1.5,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` MTTR: ${c.parsed.y.toFixed(2)} ชม./ครั้ง`,title:c=>[MACHINES[c[0].dataIndex]]}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:11}}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:10}},title:{display:true,text:'ชม./ครั้ง',color:tickColor,font:{size:10}}}}}});
   charts['mtbf-all']=new Chart(document.getElementById('c-mtbf-all'),{type:'bar',data:{labels:MSHORT,datasets:[{label:'MTBF',data:MACHINES.map(m=>+(summary[m]?.mtbf||0).toFixed(2)),backgroundColor:MC.map(c=>c+'88'),borderColor:MC,borderWidth:1.5,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` MTBF: ${c.parsed.y.toFixed(2)} ชม./ครั้ง`,title:c=>[MACHINES[c[0].dataIndex]]}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:11}}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:10}},title:{display:true,text:'ชม./ครั้ง',color:tickColor,font:{size:10}}}}}});
-  if(dm.length>0){
+  /* always render daily charts */
+  {
     const lbl=dm.map(r=>shortDate(r.date));
     charts['mttr-d']=new Chart(document.getElementById('c-mttr-d'),{type:'bar',data:{labels:lbl,datasets:[{label:'MTTR',data:dm.map(r=>+r.mttr.toFixed(2)),backgroundColor:mColor+'cc',borderColor:mColor,borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y.toFixed(2)} ชม.`}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:10},maxRotation:45,autoSkip:dm.length>20}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:10}},title:{display:true,text:'ชม./ครั้ง',color:tickColor,font:{size:10}}}}}});
     charts['mtbf-d']=new Chart(document.getElementById('c-mtbf-d'),{type:'bar',data:{labels:lbl,datasets:[{label:'MTBF',data:dm.map(r=>+r.mtbf.toFixed(2)),backgroundColor:'#0f6e5699',borderColor:'#0f6e56',borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y.toFixed(2)} ชม.`}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:10},maxRotation:45,autoSkip:dm.length>20}},y:{grid:{color:gridColor},border:{display:false},ticks:{color:tickColor,font:{size:10}},title:{display:true,text:'ชม./ครั้ง',color:tickColor,font:{size:10}}}}}});
@@ -841,6 +957,34 @@ function printReport(groupKey) {
 /* ══════════════════════════════════════════════════════════════
    DATE / FILTER HELPERS
 ══════════════════════════════════════════════════════════════ */
+function refreshData() {
+  /* Clear cache for both sheets then reload */
+  try {
+    localStorage.removeItem('dt_cache_' + CSV_2026);
+    localStorage.removeItem('dt_cache_' + CSV_2025);
+  } catch(e) {}
+  const ov = document.getElementById('load-overlay');
+  if (ov) {
+    ov.style.opacity = '1';
+    ov.style.transition = '';
+    ov.classList.remove('hidden');
+  }
+  loadSetProgress(0, 'กำลังเชื่อมต่อ Google Sheets...');
+  init();
+}
+
+function updateCacheStatus() {
+  const el = document.getElementById('cache-status');
+  if (!el) return;
+  const c26 = cacheGet(CSV_2026);
+  const c25 = cacheGet(CSV_2025);
+  if (c26 && c25) {
+    el.textContent = 'ข้อมูล Cache พร้อมใช้งาน (จะรีเฟรชอัตโนมัติในอีก 5 นาที)';
+  } else {
+    el.textContent = '';
+  }
+}
+
 function applyDateRange() {
   const f=document.getElementById('date-from').value, t=document.getElementById('date-to').value;
   dateFrom=f?new Date(f):null; dateTo=t?new Date(t):null;
@@ -902,6 +1046,15 @@ function buildShell() {
       <button class="print-btn sys" onclick="printReport('sys')">${SVG_PRINT} System</button>
     </div>
 
+    <!-- Refresh button -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:.75rem">
+      <button onclick="refreshData()" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:0.5px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);transition:all .15s;font-family:inherit" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-secondary)'">
+        <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        รีเฟรชข้อมูล
+      </button>
+      <span id="cache-status" style="font-size:10px;color:var(--text-secondary)"></span>
+    </div>
+
     <!-- tabs -->
     <div class="tab-row">
       <button class="tab-btn active" id="tab-ov">ภาพรวม Downtime</button>
@@ -918,11 +1071,28 @@ function buildShell() {
   document.getElementById('tab-mt').addEventListener('click', ()=>switchTab('mttr'));
 
   renderOverview('all','all');
+  updateCacheStatus();
 }
 
 /* ══════════════════════════════════════════════════════════════
    LOAD DATA
 ══════════════════════════════════════════════════════════════ */
+/* ── Loading progress helpers ─────────────────────────────── */
+function loadSetProgress(pct, msg) {
+  const bar  = document.getElementById('load-bar');
+  const step = document.getElementById('load-step');
+  if (bar)  bar.style.width  = pct + '%';
+  if (step && msg) step.textContent = msg;
+}
+function loadDone() {
+  const ov = document.getElementById('load-overlay');
+  if (ov) {
+    ov.style.opacity = '0';
+    ov.style.transition = 'opacity .4s ease';
+    setTimeout(() => ov.classList.add('hidden'), 420);
+  }
+}
+
 async function fetchCSV(url) {
   const resp = await fetch(url, { cache: 'no-store' });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -936,17 +1106,58 @@ async function fetchCSV(url) {
   }).data;
 }
 
-async function init() {
+/* ── localStorage cache helpers ──────────────────────────────
+   Cache key = URL, stores { ts, data }.
+   TTL = 5 minutes — fresh enough for operational data,
+   fast enough that reload feels instant.
+──────────────────────────────────────────────────────────── */
+const CACHE_TTL_MS = 5 * 60 * 1000; /* 5 minutes */
+
+function cacheGet(url) {
   try {
-    /* ดึงทั้ง 2 Sheet พร้อมกัน แล้วรวม rows */
-    const [rows2026, rows2025] = await Promise.all([
-      fetchCSV(CSV_2026),
-      fetchCSV(CSV_2025),
-    ]);
+    const raw = localStorage.getItem('dt_cache_' + url);
+    if (!raw) return null;
+    const item = JSON.parse(raw);
+    if (Date.now() - item.ts > CACHE_TTL_MS) { localStorage.removeItem('dt_cache_' + url); return null; }
+    return item.data;
+  } catch(e) { return null; }
+}
+
+function cacheSet(url, data) {
+  try { localStorage.setItem('dt_cache_' + url, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+}
+
+async function fetchWithCache(url, label, pctStart, pctEnd) {
+  const cached = cacheGet(url);
+  if (cached) {
+    loadSetProgress(pctEnd, label + ' (จาก cache) ✓');
+    return cached;
+  }
+  loadSetProgress(pctStart, 'กำลังโหลด ' + label + '...');
+  const data = await fetchCSV(url);
+  loadSetProgress(pctEnd, label + ' ✓');
+  cacheSet(url, data);
+  return data;
+}
+
+async function init() {
+  loadSetProgress(5, 'กำลังเชื่อมต่อ Google Sheets...');
+  try {
+    /* Fetch both sheets — use cache when available */
+    const rows2026 = await fetchWithCache(CSV_2026, 'Downtime 2026', 5, 45);
+    const rows2025 = await fetchWithCache(CSV_2025, 'Downtime 2025', 45, 80);
+
+    loadSetProgress(85, 'กำลังประมวลผลข้อมูล...');
     const allRows = [...rows2026, ...rows2025];
     allMerged = mergeConsec(allRows.map(parseR).filter(Boolean));
+
+    loadSetProgress(95, 'กำลังสร้าง Dashboard...');
     buildShell();
+
+    loadSetProgress(100, 'เสร็จสิ้น ✓');
+    setTimeout(loadDone, 300);
   } catch(e) {
+    loadDone();
     document.getElementById('app').innerHTML=`
       <div class="topbar"><div class="topbar-left"><div class="topbar-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div><div><div class="topbar-title">Machine Downtime Dashboard</div></div></div></div>
       <div class="err"><strong>ไม่สามารถดึงข้อมูลได้:</strong> ${e.message}<br><br>กรุณาตรวจสอบว่า Google Sheet ถูกตั้งค่า <strong>"Anyone with the link can view"</strong></div>`;
