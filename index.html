@@ -277,9 +277,9 @@
       flex-shrink: 0;
     }
     .rpt-sig-box { text-align:center; }
-    .rpt-sig-role { font-size:6.5pt; font-weight:700; color:#222 !important; margin-bottom:8pt; }
-    .rpt-sig-line { border-bottom:0.5pt solid #555; margin-bottom:2pt; }
-    .rpt-sig-detail { font-size:6pt; color:#555 !important; line-height:1.3; }
+    .rpt-sig-role { font-size:7pt; font-weight:700; color:#222 !important; margin-bottom:12pt; }
+    .rpt-sig-line { border-bottom:0.5pt solid #555; margin-bottom:4pt; }
+    .rpt-sig-detail { font-size:7pt; color:#222 !important; line-height:1.3; text-align: center; }
 
     .no-print { display:none !important; }
   }
@@ -509,8 +509,8 @@ function calcMTTRMTBF(data) {
     /* Uptime = all hours in range − failure downtime hours */
     const tUp  = Math.max(tAllDays*HRS - tDT, 0);
     const mttr = tEv>0 ? tDT/tEv : 0;
-    const mtbf = tEv>0 ? tUp/tEv : HRS;
-    const ma   = mttr+mtbf>0 ? (mtbf/(mtbf+mttr))*100 : 100;
+    const mtbf = tEv>0 ? tUp/tEv : (tAllDays*HRS);
+    const ma   = (tAllDays*HRS)>0 ? (tUp/(tAllDays*HRS))*100 : 100;
     summary[m] = {totalFailDT:tDT, totalUptime:tUp, totalEvents:tEv,
                   totalDays:tAllDays, mttr, mtbf, ma};
   });
@@ -555,7 +555,7 @@ function calcGroupMA(data, machines, failTypes) {
   }
   const mttr = tDT / tEv;
   const mtbf = tUp / tEv;
-  const ma   = mttr+mtbf>0 ? (mtbf/(mtbf+mttr))*100 : 100;
+  const ma   = baseHours>0 ? (tUp/baseHours)*100 : 100;
   return{mttr, mtbf, ma,
          totalDays:tAllDays, totalEvents:tEv, totalFailDT:tDT, totalUptime:tUp};
 }
@@ -888,14 +888,14 @@ function buildPDFReport(groupKey) {
     <div class="rpt-sig-spacer"></div>
     <div class="rpt-sig-block">
       <div class="rpt-sig-box">
-        <div class="rpt-sig-role">ผู้นำเสนอ / Prepared by</div>
+        <div class="rpt-sig-role">ผู้นำเสนอ</div>
         <div class="rpt-sig-line"></div>
-        <div class="rpt-sig-detail">ชื่อ / Name: ........................................&nbsp;&nbsp; ตำแหน่ง: ........................&nbsp;&nbsp; วันที่: ..................</div>
+        <div class="rpt-sig-detail">ชื่อ ........................................ วันที่ ..................</div>
       </div>
       <div class="rpt-sig-box">
-        <div class="rpt-sig-role">ผู้รับรอง / Approved by</div>
+        <div class="rpt-sig-role">ผู้รับรอง</div>
         <div class="rpt-sig-line"></div>
-        <div class="rpt-sig-detail">ชื่อ / Name: ........................................&nbsp;&nbsp; ตำแหน่ง: ........................&nbsp;&nbsp; วันที่: ..................</div>
+        <div class="rpt-sig-detail">ชื่อ ........................................ วันที่ ..................</div>
       </div>
     </div>`;
 
@@ -911,7 +911,19 @@ function buildPDFReport(groupKey) {
 
     /* combined MA for the group (shown on each page of multi-machine groups) */
     const showGroupMA = grp.machines.length > 1;
-    const top3m = mData.sort((a,b)=>b.smu-a.smu).slice(0,3);
+    
+    /* Top-3 filtering logic based on groupKey */
+    let top3FilterTypes = [];
+    if (groupKey === 'bw' || groupKey === 'cr') {
+      top3FilterTypes = ['ME', 'EE'];
+    } else if (groupKey === 'sys') {
+      top3FilterTypes = ['ME', 'EE', 'OPT'];
+    }
+    
+    const top3m = mData
+      .filter(r => top3FilterTypes.length === 0 || top3FilterTypes.includes(r.type))
+      .sort((a,b)=>b.smu-a.smu)
+      .slice(0,3);
 
     return `
     <!-- PAGE: ${m} -->
@@ -973,10 +985,10 @@ function buildPDFReport(groupKey) {
                 <td class="num">${nf?'<span style="color:#bbb">—</span>':r.events}</td>
                 <td class="num">${nf?'<span style="color:#bbb">—</span>':r.failSMU.toFixed(2)}</td>
                 <td class="num">${r.uptime.toFixed(2)}</td>
-                <td class="num bold ${nf?'':mClass(r.mttr)}" style="${nf?'color:#bbb':''}">${r.mttr.toFixed(2)}</td>
-                <td class="num bold ${nf?'rg':bClass(r.mtbf)}">${r.mtbf.toFixed(2)}</td>
-                <td class="num bold ${nf?'rg':maClass(r.ma)}">${r.ma.toFixed(1)}%</td>
-              </tr>`;}).join('')}
+	                <td class="num bold ${nf?'':mClass(r.mttr)}" style="${nf?'color:#bbb':''}">${r.mttr.toFixed(2)}</td>
+	                <td class="num bold ${nf?'rg':bClass(r.mtbf)}">${r.mtbf.toFixed(2)}</td>
+	                <td class="num bold ${nf?'rg':maClass(r.ma)}">${(HRS>0?(r.uptime/HRS)*100:100).toFixed(1)}%</td>
+	              </tr>`;}).join('')}
             </tbody>
           </table>`}
       </div>
