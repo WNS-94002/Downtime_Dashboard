@@ -226,12 +226,13 @@
     }
     .rpt-kpi-box {
       flex:1; border:0.5pt solid #ddd; border-radius:2pt;
-      padding:3pt 4pt; min-width:0;
+      padding:4pt 6pt; min-width:0;
       border-left: 1.5pt solid var(--rpt-color, #ccc) !important;
+      display: flex; flex-direction: column; justify-content: center;
     }
-    .rpt-kpi-box-label { font-size:6pt; color:#666 !important; text-transform:uppercase; letter-spacing:.03em; margin-bottom:0.5pt; }
-    .rpt-kpi-box-val   { font-size:11pt; font-weight:700; line-height:1; }
-    .rpt-kpi-box-unit  { font-size:6pt; color:#777 !important; margin-top:0.5pt; }
+    .rpt-kpi-box-label { font-size:6pt; color:#666 !important; text-transform:uppercase; letter-spacing:.03em; margin-bottom:1pt; }
+    .rpt-kpi-box-val   { font-size:12pt; font-weight:700; line-height:1; }
+    .rpt-kpi-box-unit  { display: none; }
     .rpt-kpi-ma        { background:#f0f7ff !important; border-left-width:2pt !important; }
 
     /* ── Sub-machine MA row (for groups with 2 machines) ── */
@@ -933,36 +934,19 @@ function buildPDFReport(groupKey) {
       <div class="rpt-kpi-bar">
         <div class="rpt-kpi-box rpt-kpi-ma" style="border-left-color:${color} !important">
           <div class="rpt-kpi-box-label">MA% — ${m}</div>
-          <div class="rpt-kpi-box-val ${maClass(s.ma)}" style="font-size:18pt">${s.ma.toFixed(1)}<span style="font-size:9pt;font-weight:400">%</span></div>
+          <div class="rpt-kpi-box-val ${maClass(s.ma)}">${s.ma.toFixed(1)}<span style="font-size:7pt;font-weight:400">%</span></div>
         </div>
         ${showGroupMA ? `<div class="rpt-kpi-box rpt-kpi-ma" style="border-left-color:#888 !important">
           <div class="rpt-kpi-box-label">MA% รวม ${grp.label}</div>
-          <div class="rpt-kpi-box-val ${maClass(gma.ma)}" style="font-size:18pt">${gma.ma.toFixed(1)}<span style="font-size:9pt;font-weight:400">%</span></div>
+          <div class="rpt-kpi-box-val ${maClass(gma.ma)}">${gma.ma.toFixed(1)}<span style="font-size:7pt;font-weight:400">%</span></div>
         </div>` : ''}
         <div class="rpt-kpi-box">
           <div class="rpt-kpi-box-label">MTTR</div>
-          <div class="rpt-kpi-box-val ${mClass(s.mttr)}">${s.mttr.toFixed(2)}</div>
-          <div class="rpt-kpi-box-unit">ชม./ครั้ง</div>
+          <div class="rpt-kpi-box-val ${mClass(s.mttr)}">${s.mttr.toFixed(2)} <span style="font-size:7pt;font-weight:400">ชม.</span></div>
         </div>
         <div class="rpt-kpi-box">
           <div class="rpt-kpi-box-label">MTBF</div>
-          <div class="rpt-kpi-box-val ${bClass(s.mtbf)}">${s.mtbf.toFixed(2)}</div>
-          <div class="rpt-kpi-box-unit">ชม./ครั้ง</div>
-        </div>
-        <div class="rpt-kpi-box">
-          <div class="rpt-kpi-box-label">จำนวนครั้ง Failure</div>
-          <div class="rpt-kpi-box-val">${s.totalEvents}</div>
-          <div class="rpt-kpi-box-unit">ครั้ง</div>
-        </div>
-        <div class="rpt-kpi-box">
-          <div class="rpt-kpi-box-label">รวม Failure DT</div>
-          <div class="rpt-kpi-box-val">${s.totalFailDT.toFixed(1)}</div>
-          <div class="rpt-kpi-box-unit">ชั่วโมง</div>
-        </div>
-        <div class="rpt-kpi-box">
-          <div class="rpt-kpi-box-label">รวม Downtime ทั้งหมด</div>
-          <div class="rpt-kpi-box-val">${totalDT.toFixed(1)}</div>
-          <div class="rpt-kpi-box-unit">ชั่วโมง</div>
+          <div class="rpt-kpi-box-val ${bClass(s.mtbf)}">${s.mtbf.toFixed(2)} <span style="font-size:7pt;font-weight:400">ชม.</span></div>
         </div>
       </div>
 
